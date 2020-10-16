@@ -181,6 +181,8 @@ def compress_and_decompress(args):
                     q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
 
                 fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
+                fnameNPX = os.path.join(args.output_dir, filenames[subidx])
+                np.savez(fnameNPX,lat0=latOutPre.nump(), lat1=latOutPost.numpy(), hyp1=hyperOutPost.numpy())
                 torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
                 output_filenames_total.append(fname)
 
@@ -209,8 +211,33 @@ def compress_and_decompress(args):
     logger.info('Time elapsed: {:.3f} s'.format(delta_t))
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
 
-
 def main(**kwargs):
+
+
+  parser = argparse.ArgumentParser(description=description,
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  args = parser.parse_args()
+  args.ckpt_path = '/space/csprh/DASA/HIFIGC/models/hific_low.pt'
+  base_path = '/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGBLOW'
+
+  train_dir = os.path.join(base_path, 'train')
+  validation_dir = os.path.join(base_path, 'validation')
+  test_dir = os.path.join(base_path, 'test')
+
+  inDir = train_dir
+  folder_names = [f for f in sorted(os.listdir(inDir))]
+  for category in folder_names:
+      fullPathCat = os.path.join(inDir, category)
+      srcs = [f for f in sorted(os.listdir(fullPathCat))]
+
+      for src in srcs:
+            args.image_dir = os.path.join(fullPathCat, src)
+            args.output_dir = args.image_dir
+            compress_and_decompress(args)
+
+
+
+def mainOLD(**kwargs):
 
     description = "Compresses batch of images using learned model specified via -ckpt argument."
     parser = argparse.ArgumentParser(description=description,
@@ -228,7 +255,7 @@ def main(**kwargs):
     args = parser.parse_args()
 
     input_images = glob.glob(os.path.join(args.image_dir, '*.jpg'))
-    input_images += glob.glob(os.path.join(args.image_dir, '*.png'))
+    #input_images += glob.glob(os.path.join(args.image_dir, '*.png'))
 
     assert len(input_images) > 0, 'No valid image files found in supplied directory!'
 
