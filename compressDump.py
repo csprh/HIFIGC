@@ -175,11 +175,11 @@ def compress_and_decompress(args):
                 MS_SSIM_total[n:n + B] = ms_ssim.data
 
             for subidx in range(reconstruction.shape[0]):
-                if B > 1:
-                    q_bpp_per_im = float(q_bpp.cpu().numpy()[subidx])
-                else:
-                    q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
-
+                #if B > 1:
+                #    q_bpp_per_im = float(q_bpp.cpu().numpy()[subidx])
+                #else:
+                #    q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
+                q_bpp_per_im = q_bpp
                 fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
                 fnameNPX = os.path.join(args.output_dir, filenames[subidx])
                 np.savez(fnameNPX,lat0=latOutPre.nump(), lat1=latOutPost.numpy(), hyp1=hyperOutPost.numpy())
