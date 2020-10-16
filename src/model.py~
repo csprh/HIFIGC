@@ -358,7 +358,7 @@ class Model(nn.Module):
 
         return compression_output
 
-    def compressDump(self, x, silent=False):
+        def compressDump(self, x, silent=False):
 
         """
         * Pass image through encoder to obtain latents: x -> Encoder() -> y
