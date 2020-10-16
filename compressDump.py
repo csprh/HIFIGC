@@ -158,7 +158,7 @@ def compress_and_decompress(args):
                         out_path=os.path.join(args.output_dir, f"{filenames[0]}_compressed.hfc"))
 
                 #reconstruction = model.decompress(compressed_output)
-                reconstruction, latOutPost, = model.decompressDump(compressed_output)
+                reconstruction, latOutPost, hyperOutPost = model.decompressDump(compressed_output)
                 q_bpp = compressed_output.total_bpp
 
             if args.normalize_input_image is True:

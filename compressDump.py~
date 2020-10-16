@@ -150,15 +150,15 @@ def compress_and_decompress(args):
                 reconstruction, q_bpp = model(data, writeout=False)
             else:
                 # Perform entropy coding
-                compressed_output = model.compress(data)
+                compressed_output, latOutPre = model.compressDump(data)
 
                 if args.save is True:
                     assert B == 1, 'Currently only supports saving single images.'
                     compression_utils.save_compressed_format(compressed_output,
                         out_path=os.path.join(args.output_dir, f"{filenames[0]}_compressed.hfc"))
 
-                reconstruction = model.decompress(compressed_output)
-                reconstruction, latOut = model.decompressDump(compressed_output)
+                #reconstruction = model.decompress(compressed_output)
+                reconstruction, latOutPost, hyperOutPost= model.decompressDump(compressed_output)
                 q_bpp = compressed_output.total_bpp
 
             if args.normalize_input_image is True:
