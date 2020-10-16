@@ -74,12 +74,12 @@ class CodingModel(nn.Module):
                 x = torch.floor(x + 0.5)
         else:
             raise NotImplementedError
-
+        
         return x
 
     def _estimate_entropy(self, likelihood, spatial_shape):
 
-        EPS = 1e-9
+        EPS = 1e-9  
         quotient = -np.log(2.)
         batch_size = likelihood.size()[0]
 
@@ -140,13 +140,13 @@ class CodingModel(nn.Module):
 
 
 class Hyperprior(CodingModel):
-
-    def __init__(self, bottleneck_capacity=220, hyperlatent_filters=LARGE_HYPERLATENT_FILTERS,
+    
+    def __init__(self, bottleneck_capacity=220, hyperlatent_filters=LARGE_HYPERLATENT_FILTERS, 
         mode='large', likelihood_type='gaussian', scale_lower_bound=MIN_SCALE, entropy_code=False,
         vectorize_encoding=True, block_encode=True):
 
         """
-        Introduces probabilistic model over latents of
+        Introduces probabilistic model over latents of 
         latents.
 
         The hyperprior over the standard latents is modelled as
@@ -154,7 +154,7 @@ class Hyperprior(CodingModel):
         """
 
         super(Hyperprior, self).__init__(n_channels=bottleneck_capacity)
-
+        
         self.bottleneck_capacity = bottleneck_capacity
         self.scale_lower_bound = scale_lower_bound
 
@@ -168,7 +168,7 @@ class Hyperprior(CodingModel):
 
         self.synthesis_mu = synthesis_net(C=bottleneck_capacity, N=hyperlatent_filters)
         self.synthesis_std = synthesis_net(C=bottleneck_capacity, N=hyperlatent_filters)
-
+        
         self.amortization_models = [self.analysis_net, self.synthesis_mu, self.synthesis_std]
 
         self.hyperlatent_likelihood = hyperprior_model.HyperpriorDensity(n_channels=hyperlatent_filters)
@@ -235,7 +235,7 @@ class Hyperprior(CodingModel):
             hyper_coding_shape=hyper_coding_shape,  # C,H,W
             latent_coding_shape=latent_coding_shape,  # C,H,W
             batch_shape=batch_shape,
-            hyperlatent_bits=hyperlatent_bits.item(),  # for reporting
+            hyperlatent_bits=hyperlatent_bits.item(),  # for reporting 
             latent_bits=latent_bits.item(),
             total_bits=(hyperlatent_bits + latent_bits).item(),
             hyperlatent_bpp=hyperlatent_bpp.item(),
@@ -268,44 +268,16 @@ class Hyperprior(CodingModel):
         # Use latent statistics to build indexed probability tables, and decompress latents
         latents_decoded, _ = self.prior_entropy_model.decompress(latents_encoded, means=latent_means,
             scales=latent_scales, broadcast_shape=latent_spatial_shape,
-            coding_shape=compression_output.latent_coding_shape, vectorize=self.vectorize_encoding,
+            coding_shape=compression_output.latent_coding_shape, vectorize=self.vectorize_encoding, 
             block_decode=self.block_encode)
 
         return latents_decoded.to(device)
-
-    def decompress_forwardDump(self, compression_output, device):
-
-        hyperlatents_encoded = compression_output.hyperlatents_encoded
-        latents_encoded = compression_output.latents_encoded
-        hyperlatent_spatial_shape = compression_output.hyperlatent_spatial_shape
-        batch_shape = compression_output.batch_shape
-
-        # Decompress hyperlatents
-        hyperlatents_decoded, _ = self.hyperprior_entropy_model.decompress(hyperlatents_encoded,
-            batch_shape=batch_shape, broadcast_shape=hyperlatent_spatial_shape,
-            coding_shape=compression_output.hyper_coding_shape, vectorize=self.vectorize_encoding,
-            block_decode=self.block_encode)
-        hyperlatents_decoded = hyperlatents_decoded.to(device)
-
-        # Recover latent statistics from compressed hyperlatents
-        latent_means = self.synthesis_mu(hyperlatents_decoded)
-        latent_scales = self.synthesis_std(hyperlatents_decoded)
-        latent_scales = lower_bound_toward(latent_scales, self.scale_lower_bound)
-        latent_spatial_shape = latent_scales.size()[2:]
-
-        # Use latent statistics to build indexed probability tables, and decompress latents
-        latents_decoded, _ = self.prior_entropy_model.decompress(latents_encoded, means=latent_means,
-            scales=latent_scales, broadcast_shape=latent_spatial_shape,
-            coding_shape=compression_output.latent_coding_shape, vectorize=self.vectorize_encoding,
-            block_decode=self.block_encode)
-
-        return latents_decoded.to(device), hyperlatents_decoded
 
 
     def forward(self, latents, spatial_shape, **kwargs):
 
         hyperlatents = self.analysis_net(latents)
-
+        
         # Mismatch b/w continuous and discrete cases?
         # Differential entropy, hyperlatents
         noisy_hyperlatents = self._quantize(hyperlatents, mode='noise')
@@ -334,7 +306,7 @@ class Hyperprior(CodingModel):
         noisy_latent_likelihood = self.latent_likelihood(noisy_latents, mean=latent_means,
             scale=latent_scales)
         noisy_latent_bits, noisy_latent_bpp = self._estimate_entropy(
-            noisy_latent_likelihood, spatial_shape)
+            noisy_latent_likelihood, spatial_shape)     
 
         # Discrete entropy, latents
         quantized_latents = self._quantize(latents, mode='quantize', means=latent_means)
@@ -366,19 +338,19 @@ Discretized logistic mixture model.
 
 
 class HyperpriorDLMM(CodingModel):
-
+    
     def __init__(self, bottleneck_capacity=64, hyperlatent_filters=LARGE_HYPERLATENT_FILTERS, mode='large',
-        likelihood_type='gaussian', scale_lower_bound=MIN_SCALE, mixture_components=4,
+        likelihood_type='gaussian', scale_lower_bound=MIN_SCALE, mixture_components=4, 
         entropy_code=False):
         """
-        Introduces probabilistic model over latents of
+        Introduces probabilistic model over latents of 
         latents.
 
         The hyperprior over the standard latents is modelled as
         a non-parametric, fully factorized density.
         """
         super(HyperpriorDLMM, self).__init__(n_channels=bottleneck_capacity)
-
+        
         assert bottleneck_capacity <= 128, 'Will probably run out of memory!'
         self.bottleneck_capacity = bottleneck_capacity
         self.scale_lower_bound = scale_lower_bound
@@ -394,7 +366,7 @@ class HyperpriorDLMM(CodingModel):
 
         # TODO: Combine scale, loc into single network
         self.synthesis_DLMM_params = synthesis_net(C=bottleneck_capacity, N=hyperlatent_filters)
-
+    
         self.amortization_models = [self.analysis_net, self.synthesis_DLMM_params]
 
         self.hyperlatent_likelihood = hyperprior_model.HyperpriorDensity(n_channels=hyperlatent_filters)
@@ -409,7 +381,7 @@ class HyperpriorDLMM(CodingModel):
     def latent_log_likelihood_DLMM(self, x, DLMM_params):
 
         # (B C K H W)
-        x, (logit_pis, means, log_scales), K = hyper.unpack_likelihood_params(x,
+        x, (logit_pis, means, log_scales), K = hyper.unpack_likelihood_params(x, 
             DLMM_params, LOG_SCALES_MIN)
 
         # Assumes 1 - CDF(x) = CDF(-x) symmetry
@@ -432,7 +404,7 @@ class HyperpriorDLMM(CodingModel):
     def forward(self, latents, spatial_shape, **kwargs):
 
         hyperlatents = self.analysis_net(latents)
-
+        
         # Mismatch b/w continuous and discrete cases?
         # Differential entropy, hyperlatents
         noisy_hyperlatents = self._quantize(hyperlatents, mode='noise')
@@ -455,17 +427,17 @@ class HyperpriorDLMM(CodingModel):
 
         # Differential entropy, latents
         noisy_latents = self._quantize(latents, mode='noise')
-        noisy_latent_log_likelihood = self.latent_log_likelihood_DLMM(noisy_latents,
+        noisy_latent_log_likelihood = self.latent_log_likelihood_DLMM(noisy_latents, 
             DLMM_params=latent_DLMM_params)
         noisy_latent_bits, noisy_latent_bpp = self._estimate_entropy_log(
-            noisy_latent_log_likelihood, spatial_shape)
+            noisy_latent_log_likelihood, spatial_shape)     
 
         # Discrete entropy, latents
         quantized_latents = self._quantize(latents, mode='quantize')
-        quantized_latent_log_likelihood = self.latent_log_likelihood_DLMM(quantized_latents,
+        quantized_latent_log_likelihood = self.latent_log_likelihood_DLMM(quantized_latents, 
             DLMM_params=latent_DLMM_params)
         quantized_latent_bits, quantized_latent_bpp = self._estimate_entropy_log(
-            quantized_latent_log_likelihood, spatial_shape)
+            quantized_latent_log_likelihood, spatial_shape)     
 
 
         if self.training is True:
@@ -485,7 +457,7 @@ class HyperpriorDLMM(CodingModel):
 
         return info
 
-
+        
 
 if __name__ == '__main__':
 
