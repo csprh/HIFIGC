@@ -186,27 +186,27 @@ def compress_and_decompress(args):
                 torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
                 output_filenames_total.append(fname)
 
-            bpp_total[n:n + B] = bpp.data
-            q_bpp_total[n:n + B] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
-            LPIPS_total[n:n + B] = perceptual_loss.data
+            #bpp_total[n:n + B] = bpp.data
+            #q_bpp_total[n:n + B] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
+            #LPIPS_total[n:n + B] = perceptual_loss.data
             n += B
 
-    df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
-    df.columns = ['input_filename', 'output_filename']
-    df['bpp_original'] = bpp_total.cpu().numpy()
-    df['q_bpp'] = q_bpp_total.cpu().numpy()
-    df['LPIPS'] = LPIPS_total.cpu().numpy()
+    #df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
+    #df.columns = ['input_filename', 'output_filename']
+    #df['bpp_original'] = bpp_total.cpu().numpy()
+    #df['q_bpp'] = q_bpp_total.cpu().numpy()
+    #df['LPIPS'] = LPIPS_total.cpu().numpy()
 
-    if args.metrics is True:
-        df['PSNR'] = PSNR_total.cpu().numpy()
-        df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
+    #if args.metrics is True:
+    #    df['PSNR'] = PSNR_total.cpu().numpy()
+    #    df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
 
-    df_path = os.path.join(args.output_dir, 'compression_metrics.h5')
-    df.to_hdf(df_path, key='df')
+    #df_path = os.path.join(args.output_dir, 'compression_metrics.h5')
+    #df.to_hdf(df_path, key='df')
 
-    pprint(df)
+    #pprint(df)
 
-    logger.info('Complete. Reconstructions saved to {}. Output statistics saved to {}'.format(args.output_dir, df_path))
+    #logger.info('Complete. Reconstructions saved to {}. Output statistics saved to {}'.format(args.output_dir, df_path))
     delta_t = time.time() - start_time
     logger.info('Time elapsed: {:.3f} s'.format(delta_t))
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
