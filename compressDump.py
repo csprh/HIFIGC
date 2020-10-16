@@ -226,13 +226,9 @@ def main(**kwargs):
   inDir = train_dir
   folder_names = [f for f in sorted(os.listdir(inDir))]
   for category in folder_names:
-      fullPathCat = os.path.join(inDir, category)
-      srcs = [f for f in sorted(os.listdir(fullPathCat))]
-
-      for src in srcs:
-            args.image_dir = os.path.join(fullPathCat, src)
-            args.output_dir = args.image_dir
-            compress_and_decompress(args)
+      args.image_dir = os.path.join(inDir, category)
+      args.output_dir = args.image_dir
+      compress_and_decompress(args)
 
 
 

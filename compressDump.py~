@@ -212,8 +212,7 @@ def compress_and_decompress(args):
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
 
 def main(**kwargs):
-
-
+  description = "Compresses batch of images using learned model specified via -ckpt argument."
   parser = argparse.ArgumentParser(description=description,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   args = parser.parse_args()
