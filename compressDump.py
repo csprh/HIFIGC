@@ -230,6 +230,7 @@ def main(**kwargs):
       args.output_dir = args.image_dir
       args.reconstruct = False
       args.save = False
+      args.metrics = False
       compress_and_decompress(args)
 
 

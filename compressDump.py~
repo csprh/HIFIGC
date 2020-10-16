@@ -228,6 +228,8 @@ def main(**kwargs):
   for category in folder_names:
       args.image_dir = os.path.join(inDir, category)
       args.output_dir = args.image_dir
+      args.reconstruct = False
+      args.save = False
       compress_and_decompress(args)
 
 
