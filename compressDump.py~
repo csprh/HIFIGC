@@ -182,7 +182,7 @@ def compress_and_decompress(args, iNum):
 
                 q_bpp_per_im = q_bpp
                 fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
-                fnameNPX = os.path.join(args.output_dir, filenames[subidx])
+                fnameNPX = os.path.join(args.output_dir,  "BATCH{6d}".format(iNum)
                 thisLat0 = latOutPre.numpy(); thisLat0 = thisLat0[subidx,:,:,:]
                 thisHyp1 = hyperOutPost.numpy(); thisHyp1 = thisHyp1[subidx,:,:,:]
                 thisLat1 = latOutPost.numpy(); thisLat1 = thisLat1[subidx,:,:,:]
@@ -230,6 +230,7 @@ def genNPZs(inDir, args):
   if not existsDir:
     os.makedirs(args.output_dir)
 
+  iNum = 0
   for thisCat, category in enumerate(folder_names):
     #Discount background
     if thisCat == 0:
@@ -237,7 +238,7 @@ def genNPZs(inDir, args):
 
     args.image_dir = os.path.join(inDir, category)
     args.thisCat = thisCat - 1
-    compress_and_decompress(args)
+    iNum = compress_and_decompress(args, iNum)
 
 def main(**kwargs):
   description = "Compresses batch of images using learned model specified via -ckpt argument."
