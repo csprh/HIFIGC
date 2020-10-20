@@ -247,9 +247,9 @@ def main(**kwargs):
   args = parser.parse_args()
 
 
-  train_dir = os.path.join(arg.in_dir, 'train')
-  validation_dir = os.path.join(arg.in_dir, 'validation')
-  test_dir = os.path.join(arg.in_dir, 'test')
+  train_dir = os.path.join(args.in_dir, 'train')
+  validation_dir = os.path.join(args.in_dir, 'validation')
+  test_dir = os.path.join(args.in_dir, 'test')
 
   genNPZs(train_dir, args)
   genNPZs(validation_dir, args)

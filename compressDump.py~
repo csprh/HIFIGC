@@ -237,7 +237,8 @@ def main(**kwargs):
   description = "Compresses batch of images using learned model specified via -ckpt argument."
   parser = argparse.ArgumentParser(description=description,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument("-ckpt", "--ckpt_path", type=str, default='/space/csprh/DASA/HIFIGC/models/hific_low.pt', required=True,  help="Path to model to be restored")
+  parser.add_argument("-ckpt", "--ckpt_path", type=str, default='/space/csprh/DASA/HIFIGC/models/hific_low.pt',
+        help="Path to model to be restored")
   parser.add_argument("-i", "--in_dir", type=str, default='/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGB',
         help="Path to directory containing images to compress")
   parser.add_argument("-o", "--out_dir", type=str, default='NPZsLOW',
