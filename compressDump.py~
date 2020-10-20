@@ -12,8 +12,9 @@ import torch
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
+import tensoflow as tf
 
-from tensorflow.keras.utils.to_categorical as to_categorical
+from tf.keras.utils.to_categorical import to_categorical
 # Custom modules
 from src.helpers import utils, datasets, metrics
 from src.compression import compression_utils
