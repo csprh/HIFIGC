@@ -186,27 +186,27 @@ def compress_and_decompress(args):
                 torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
                 output_filenames_total.append(fname)
 
-            bpp_total[n:n + B] = bpp.data
-            q_bpp_total[n:n + B] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
-            LPIPS_total[n:n + B] = perceptual_loss.data
+            #bpp_total[n:n + B] = bpp.data
+            #q_bpp_total[n:n + B] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
+            #LPIPS_total[n:n + B] = perceptual_loss.data
             n += B
 
-    df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
-    df.columns = ['input_filename', 'output_filename']
-    df['bpp_original'] = bpp_total.cpu().numpy()
-    df['q_bpp'] = q_bpp_total.cpu().numpy()
-    df['LPIPS'] = LPIPS_total.cpu().numpy()
+    #df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
+    #df.columns = ['input_filename', 'output_filename']
+    #df['bpp_original'] = bpp_total.cpu().numpy()
+    #df['q_bpp'] = q_bpp_total.cpu().numpy()
+    #df['LPIPS'] = LPIPS_total.cpu().numpy()
 
-    if args.metrics is True:
-        df['PSNR'] = PSNR_total.cpu().numpy()
-        df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
+    #if args.metrics is True:
+    #    df['PSNR'] = PSNR_total.cpu().numpy()
+    #    df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
 
-    df_path = os.path.join(args.output_dir, 'compression_metrics.h5')
-    df.to_hdf(df_path, key='df')
+    #df_path = os.path.join(args.output_dir, 'compression_metrics.h5')
+    #df.to_hdf(df_path, key='df')
 
-    pprint(df)
+    #pprint(df)
 
-    logger.info('Complete. Reconstructions saved to {}. Output statistics saved to {}'.format(args.output_dir, df_path))
+    #logger.info('Complete. Reconstructions saved to {}. Output statistics saved to {}'.format(args.output_dir, df_path))
     delta_t = time.time() - start_time
     logger.info('Time elapsed: {:.3f} s'.format(delta_t))
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
@@ -215,23 +215,44 @@ def main(**kwargs):
   description = "Compresses batch of images using learned model specified via -ckpt argument."
   parser = argparse.ArgumentParser(description=description,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument("-ckpt", "--ckpt_path", type=str, required=True, help="Path to model to be restored")
+  parser.add_argument("-i", "--in_dir", type=str, default='/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGB',
+        help="Path to directory containing images to compress")
+  parser.add_argument("-o", "--out_dir", type=str, default='NPYS1',
+        help="Path to directory to output npz files to")
+
   args = parser.parse_args()
-  args.ckpt_path = '/space/csprh/DASA/HIFIGC/models/hific_low.pt'
-  base_path = '/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGBLOW'
+  #args.ckpt_path = '/space/csprh/DASA/HIFIGC/models/hific_low.pt'
+  # = '/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGBLOW'
 
-  train_dir = os.path.join(base_path, 'train')
-  validation_dir = os.path.join(base_path, 'validation')
-  test_dir = os.path.join(base_path, 'test')
+  train_dir = os.path.join(arg.in_dir, 'train')
+  validation_dir = os.path.join(arg.in_dir, 'validation')
+  test_dir = os.path.join(arg.in_dir, 'test')
 
-  inDir = train_dir
-  folder_names = [f for f in sorted(os.listdir(inDir))]
-  for category in folder_names:
-      args.image_dir = os.path.join(inDir, category)
-      args.output_dir = args.image_dir
-      args.reconstruct = False
-      args.save = False
-      args.metrics = False
-      compress_and_decompress(args)
+  genNPZs(train_dir, args)
+  genNPZs(validation_dir, args)
+  genNPZs(test_dir, args)
+
+def genNPZs(inDir, args)
+
+  args.reconstruct = False
+  args.save = False
+  args.metrics = False
+  args.output_dir = os.path.join(indir, args.out_dir)
+  existsDir = os.path.isdir(args.output_dir)
+
+  # If folder doesn't exist, then create it.
+  if not existsDir:
+    os.makedirs(args.output_dir)
+
+  for thisCat, category in enumerate(folder_names):
+    #Discount background
+    if thisCat == 0:
+        continue
+    fullPathCat = os.path.join(inDir, category)
+    args.image_dir = os.path.join(inDir, category)
+
+    compress_and_decompress(args)
 
 
 

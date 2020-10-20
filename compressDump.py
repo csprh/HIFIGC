@@ -211,27 +211,49 @@ def compress_and_decompress(args):
     logger.info('Time elapsed: {:.3f} s'.format(delta_t))
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
 
+def genNPZs(inDir, args)
+
+  folder_names = sorted(os.listdir(inDir))
+  args.reconstruct = False
+  args.save = False
+  args.metrics = False
+  args.output_dir = os.path.join(indir, args.out_dir)
+  existsDir = os.path.isdir(args.output_dir)
+
+  # If folder doesn't exist, then create it.
+  if not existsDir:
+    os.makedirs(args.output_dir)
+
+  for thisCat, category in enumerate(folder_names):
+    #Discount background
+    if thisCat == 0:
+        continue
+    fullPathCat = os.path.join(inDir, category)
+    args.image_dir = os.path.join(inDir, category)
+
+    compress_and_decompress(args)
+
 def main(**kwargs):
   description = "Compresses batch of images using learned model specified via -ckpt argument."
   parser = argparse.ArgumentParser(description=description,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument("-ckpt", "--ckpt_path", type=str, default='/space/csprh/DASA/HIFIGC/models/hific_low.pt', required=True,  help="Path to model to be restored")
+  parser.add_argument("-i", "--in_dir", type=str, default='/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGB',
+        help="Path to directory containing images to compress")
+  parser.add_argument("-o", "--out_dir", type=str, default='NPZsLOW',
+        help="Path to directory to output npz files to")
+
   args = parser.parse_args()
-  args.ckpt_path = '/space/csprh/DASA/HIFIGC/models/hific_low.pt'
-  base_path = '/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGBLOW'
 
-  train_dir = os.path.join(base_path, 'train')
-  validation_dir = os.path.join(base_path, 'validation')
-  test_dir = os.path.join(base_path, 'test')
 
-  inDir = train_dir
-  folder_names = [f for f in sorted(os.listdir(inDir))]
-  for category in folder_names:
-      args.image_dir = os.path.join(inDir, category)
-      args.output_dir = args.image_dir
-      args.reconstruct = False
-      args.save = False
-      args.metrics = False
-      compress_and_decompress(args)
+  train_dir = os.path.join(arg.in_dir, 'train')
+  validation_dir = os.path.join(arg.in_dir, 'validation')
+  test_dir = os.path.join(arg.in_dir, 'test')
+
+  genNPZs(train_dir, args)
+  genNPZs(validation_dir, args)
+  genNPZs(test_dir, args)
+
 
 
 
