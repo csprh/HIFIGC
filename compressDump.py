@@ -220,7 +220,7 @@ def genNPZs(inDir, args):
   args.reconstruct = False
   args.save = False
   args.metrics = False
-  args.output_dir = os.path.join(inDir, args.out_dir)
+  args.output_dir = inDir+args.out_dir
   existsDir = os.path.isdir(args.output_dir)
 
   # If folder doesn't exist, then create it.
@@ -248,7 +248,6 @@ def main(**kwargs):
         help="Path to directory to output npz files to")
 
   args = parser.parse_args()
-
 
   train_dir = os.path.join(args.in_dir, 'train')
   validation_dir = os.path.join(args.in_dir, 'validation')
