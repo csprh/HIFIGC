@@ -211,7 +211,7 @@ def compress_and_decompress(args):
     logger.info('Time elapsed: {:.3f} s'.format(delta_t))
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
 
-def genNPZs(inDir, args)
+def genNPZs(inDir, args):
 
   folder_names = sorted(os.listdir(inDir))
   args.reconstruct = False
