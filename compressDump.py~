@@ -182,7 +182,7 @@ def compress_and_decompress(args, iNum):
 
                 q_bpp_per_im = q_bpp
                 fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
-                fnameNPX = os.path.join(args.output_dir,"BATCH{6d}".format(iNum))
+                fnameNPX = os.path.join(args.output_dir,"BATCH{:06d}".format(iNum))
                 thisLat0 = latOutPre.numpy(); thisLat0 = thisLat0[subidx,:,:,:]
                 thisHyp1 = hyperOutPost.numpy(); thisHyp1 = thisHyp1[subidx,:,:,:]
                 thisLat1 = latOutPost.numpy(); thisLat1 = thisLat1[subidx,:,:,:]
@@ -223,7 +223,7 @@ def genNPZs(inDir, args):
   args.reconstruct = False
   args.save = False
   args.metrics = False
-  args.output_dir = inDir+args.out_dir
+  args.output_dir = args.in_dir+'/batches/'+args.out_dir
   existsDir = os.path.isdir(args.output_dir)
 
   # If folder doesn't exist, then create it.
@@ -248,7 +248,7 @@ def main(**kwargs):
         help="Path to model to be restored")
   parser.add_argument("-i", "--in_dir", type=str, default='/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGB',
         help="Path to directory containing images to compress")
-  parser.add_argument("-o", "--out_dir", type=str, default='batches/NPZsLOW',
+  parser.add_argument("-o", "--out_dir", type=str, default='NPZsLOW',
         help="Path to directory to output npz files to")
 
   args = parser.parse_args()
@@ -257,9 +257,9 @@ def main(**kwargs):
   validation_dir = os.path.join(args.in_dir, 'validation')
   test_dir = os.path.join(args.in_dir, 'test')
 
-  genNPZs(train_dir, args)
-  genNPZs(validation_dir, args)
-  genNPZs(test_dir, args)
+  genNPZs('train', args)
+  genNPZs('validation', args)
+  genNPZs('test', args)
 
 
 

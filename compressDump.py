@@ -217,13 +217,14 @@ def compress_and_decompress(args, iNum):
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
     return iNum
 
-def genNPZs(inDir, args):
+def genNPZs(splitDir, args):
 
+  inDir = os.path.join(args.in_dir, splitDir)
   folder_names = sorted(os.listdir(inDir))
   args.reconstruct = False
   args.save = False
   args.metrics = False
-  args.output_dir = inDir+args.out_dir
+  args.output_dir = args.in_dir+'/batches/'+ splitDir + args.out_dir
   existsDir = os.path.isdir(args.output_dir)
 
   # If folder doesn't exist, then create it.
@@ -248,18 +249,17 @@ def main(**kwargs):
         help="Path to model to be restored")
   parser.add_argument("-i", "--in_dir", type=str, default='/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGB',
         help="Path to directory containing images to compress")
-  parser.add_argument("-o", "--out_dir", type=str, default='batches/NPZsLOW',
+  parser.add_argument("-o", "--out_dir", type=str, default='NPZsLOW',
         help="Path to directory to output npz files to")
 
   args = parser.parse_args()
 
-  train_dir = os.path.join(args.in_dir, 'train')
-  validation_dir = os.path.join(args.in_dir, 'validation')
-  test_dir = os.path.join(args.in_dir, 'test')
 
-  genNPZs(train_dir, args)
-  genNPZs(validation_dir, args)
-  genNPZs(test_dir, args)
+
+
+  genNPZs('train', args)
+  genNPZs('validation', args)
+  genNPZs('test', args)
 
 
 
