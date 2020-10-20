@@ -98,7 +98,7 @@ def load_and_decompress(model, compressed_format_path, out_path):
 
     return reconstruction
 
-def compress_and_decompress(args):
+def compress_and_decompress(args, iNum):
 
     # Reproducibility
     make_deterministic()
@@ -179,15 +179,17 @@ def compress_and_decompress(args):
                 #    q_bpp_per_im = float(q_bpp.cpu().numpy()[subidx])
                 #else:
                 #    q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
+
                 q_bpp_per_im = q_bpp
                 fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
-                fnameNPX = os.path.join(args.output_dir, filenames[subidx])
+                fnameNPX = os.path.join(args.output_dir,  "BATCH{6d}".format(iNum)
                 thisLat0 = latOutPre.numpy(); thisLat0 = thisLat0[subidx,:,:,:]
                 thisHyp1 = hyperOutPost.numpy(); thisHyp1 = thisHyp1[subidx,:,:,:]
                 thisLat1 = latOutPost.numpy(); thisLat1 = thisLat1[subidx,:,:,:]
                 np.savez(fnameNPX,lat0=thisLat0, lat1=thisLat1, hyp1=thisHyp1, thisCat = args.thisCat)
-                torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
+                #torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
                 output_filenames_total.append(fname)
+                iNum = iNum+1
 
             #bpp_total[n:n + B] = bpp.data
             #q_bpp_total[n:n + B] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
@@ -213,6 +215,7 @@ def compress_and_decompress(args):
     delta_t = time.time() - start_time
     logger.info('Time elapsed: {:.3f} s'.format(delta_t))
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
+    return iNum
 
 def genNPZs(inDir, args):
 
@@ -227,6 +230,7 @@ def genNPZs(inDir, args):
   if not existsDir:
     os.makedirs(args.output_dir)
 
+  iNum = 0
   for thisCat, category in enumerate(folder_names):
     #Discount background
     if thisCat == 0:
@@ -234,7 +238,7 @@ def genNPZs(inDir, args):
 
     args.image_dir = os.path.join(inDir, category)
     args.thisCat = thisCat - 1
-    compress_and_decompress(args)
+    iNum = compress_and_decompress(args, iNum)
 
 def main(**kwargs):
   description = "Compresses batch of images using learned model specified via -ckpt argument."
@@ -244,7 +248,7 @@ def main(**kwargs):
         help="Path to model to be restored")
   parser.add_argument("-i", "--in_dir", type=str, default='/space/csprh/DASA/DATABASES/HIFI/split_dataset_RGB',
         help="Path to directory containing images to compress")
-  parser.add_argument("-o", "--out_dir", type=str, default='NPZsLOW',
+  parser.add_argument("-o", "--out_dir", type=str, default='batches/NPZsLOW',
         help="Path to directory to output npz files to")
 
   args = parser.parse_args()
