@@ -217,7 +217,7 @@ def genNPZs(inDir, args):
   args.reconstruct = False
   args.save = False
   args.metrics = False
-  args.output_dir = os.path.join(indir, args.out_dir)
+  args.output_dir = os.path.join(inDir, args.out_dir)
   existsDir = os.path.isdir(args.output_dir)
 
   # If folder doesn't exist, then create it.
@@ -228,7 +228,7 @@ def genNPZs(inDir, args):
     #Discount background
     if thisCat == 0:
         continue
-    fullPathCat = os.path.join(inDir, category)
+
     args.image_dir = os.path.join(inDir, category)
     args.thisCat = thisCat - 1
     compress_and_decompress(args)
