@@ -182,7 +182,10 @@ def compress_and_decompress(args):
                 q_bpp_per_im = q_bpp
                 fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
                 fnameNPX = os.path.join(args.output_dir, filenames[subidx])
-                np.savez(fnameNPX,lat0=latOutPre.numpy(), lat1=latOutPost.numpy(), hyp1=hyperOutPost.numpy(), thisCat = args.thisCat)
+                thisLat0 = latOutPre.numpy(); thisLat0 = thisLat0[subidx,:,:,:]
+                thisHyp1 = hyperOutPost.numpy(); thisHyp1 = thisHyp1[subidx,:,:,:]
+                thisLat1 = latOutPost.numpy(); thisLat1 = thisLat1[subidx,:,:,:]
+                np.savez(fnameNPX,lat0=thisLat0, lat1=thisLat1, hyp1=thisHyp1, thisCat = args.thisCat)
                 torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
                 output_filenames_total.append(fname)
 
