@@ -12,7 +12,7 @@ import torch
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
-import tensoflow as tf
+import tensorflow as tf
 
 from tf.keras.utils.to_categorical import to_categorical
 # Custom modules
