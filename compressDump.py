@@ -182,7 +182,7 @@ def compress_and_decompress(args, iNum):
 
                 q_bpp_per_im = q_bpp
                 fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
-                fnameNPX = os.path.join(args.output_dir,"BATCH{6d}".format(iNum))
+                fnameNPX = os.path.join(args.output_dir,"BATCH{:06d}".format(iNum))
                 thisLat0 = latOutPre.numpy(); thisLat0 = thisLat0[subidx,:,:,:]
                 thisHyp1 = hyperOutPost.numpy(); thisHyp1 = thisHyp1[subidx,:,:,:]
                 thisLat1 = latOutPost.numpy(); thisLat1 = thisLat1[subidx,:,:,:]
