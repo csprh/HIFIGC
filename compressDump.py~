@@ -19,6 +19,7 @@ from src.compression import compression_utils
 from src.loss.perceptual_similarity import perceptual_loss as ps
 from default_config import hific_args, mse_lpips_args, directories, ModelModes, ModelTypes
 from default_config import args as default_args
+os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 File = namedtuple('File', ['original_path', 'compressed_path',
                            'compressed_num_bytes', 'bpp'])
@@ -187,11 +188,11 @@ def compress_and_decompress(args, iNum):
                 thisHyp1 = hyperOutPost.numpy(); thisHyp1 = thisHyp1[subidx,:,:,:]
                 thisLat1 = latOutPost.numpy(); thisLat1 = thisLat1[subidx,:,:,:]
 
-                le = compression_output.latents_encoded
+                le = compressed_output.latents_encoded
                 #bits = bitstream(le)
                 #leBits =np.frombuffer( bits.unpack(b'\x00', b'\x01'), dtype=np.uint8)
                 leBits = le
-                hle = compression_output.hyperlatents_encoded
+                hle = compressed_output.hyperlatents_encoded
                 np.savez(fnameNPX,lat0=thisLat0, lat1=thisLat1, hyp1=thisHyp1, hle = hle, le = leBits, thisCat = args.thisCat)
                 #torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
                 output_filenames_total.append(fname)

@@ -19,7 +19,7 @@ from src.compression import compression_utils
 from src.loss.perceptual_similarity import perceptual_loss as ps
 from default_config import hific_args, mse_lpips_args, directories, ModelModes, ModelTypes
 from default_config import args as default_args
-os.environ["CUDA_VISIBLE_DEVICES"]=""
+#os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 File = namedtuple('File', ['original_path', 'compressed_path',
                            'compressed_num_bytes', 'bpp'])
