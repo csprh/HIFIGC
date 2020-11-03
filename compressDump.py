@@ -186,7 +186,13 @@ def compress_and_decompress(args, iNum):
                 thisLat0 = latOutPre.numpy(); thisLat0 = thisLat0[subidx,:,:,:]
                 thisHyp1 = hyperOutPost.numpy(); thisHyp1 = thisHyp1[subidx,:,:,:]
                 thisLat1 = latOutPost.numpy(); thisLat1 = thisLat1[subidx,:,:,:]
-                np.savez(fnameNPX,lat0=thisLat0, lat1=thisLat1, hyp1=thisHyp1, thisCat = args.thisCat)
+
+                le = compression_output.latents_encoded
+                #bits = bitstream(le)
+                #leBits =np.frombuffer( bits.unpack(b'\x00', b'\x01'), dtype=np.uint8)
+                leBits = le
+                hle = compression_output.hyperlatents_encoded
+                np.savez(fnameNPX,lat0=thisLat0, lat1=thisLat1, hyp1=thisHyp1, hle = hle, le = leBits, thisCat = args.thisCat)
                 #torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
                 output_filenames_total.append(fname)
                 iNum = iNum+1
