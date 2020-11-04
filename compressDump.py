@@ -258,6 +258,8 @@ def main(**kwargs):
         help="Path to directory containing images to compress")
   parser.add_argument("-o", "--out_dir", type=str, default='NPZsLOW',
         help="Path to directory to output npz files to")
+  parser.add_argument('-bs', '--batch_size', type=int, default=1,
+        help="Loader batch size. Set to 1 if images in directory are different sizes.")
 
   args = parser.parse_args()
 
