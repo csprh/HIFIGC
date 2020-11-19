@@ -22,8 +22,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
-import torchvision.transforms as transforms
-
 # Custom modules
 from src.model import Model
 from src.helpers import utils, datasets
@@ -314,19 +312,6 @@ if __name__ == '__main__':
     logger.info('USING DEVICE {}'.format(device))
     logger.info('USING GPU ID {}'.format(args.gpu))
     logger.info('USING DATASET: {}'.format(args.dataset))
-
-    C101Root = './data'
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-    trainset = torchvision.datasets.Caltech101(root=C101Root, train=True,
-                                        download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
-                                          shuffle=True, num_workers=2)
-
-    testset = torchvision.datasets.Caltech101(root=C101Root, train=False,
-                                       download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=4,
-                                         shuffle=False, num_workers=2)
 
     test_loader = datasets.get_dataloaders(args.dataset,
                                 root=args.dataset_path,
