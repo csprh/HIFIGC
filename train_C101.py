@@ -324,7 +324,7 @@ if __name__ == '__main__':
 
     W = 256
     H = 256
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    #transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
     transform = transforms.Compose([transforms.ToPILImage(),transforms.Resize((W, H)),  transforms.ToTensor(),
          transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
@@ -357,7 +357,7 @@ if __name__ == '__main__':
     #                            normalize=args.normalize_input_image)
 
     args.n_data = len(train_loader.dataset)
-    args.image_dims = train_loader.dataset.image_dims
+    args.image_dims = wholeset.image_dims
     logger.info('Training elements: {}'.format(args.n_data))
     logger.info('Input Dimensions: {}'.format(args.image_dims))
     logger.info('Optimizers: {}'.format(optimizers))
