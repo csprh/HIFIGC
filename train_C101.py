@@ -322,10 +322,17 @@ if __name__ == '__main__':
     logger.info('USING DATASET: {}'.format(args.dataset))
     C101Root = '/space/csprh/DASA/DATABASES/'
 
+    W = 256
+    H = 256
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+    transform = transforms.Compose([transforms.ToPILImage(),transforms.Resize((W, H)),  transforms.ToTensor(),
+         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
     wholeset = torchvision.datasets.Caltech101(root=C101Root,
                                         download=False, transform=transform)
+
+    wholeset.image_dims = (3, W, H)
 
     trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
