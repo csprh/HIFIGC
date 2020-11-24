@@ -85,6 +85,12 @@ def test(args, model, epoch, idx, data, test_data, test_bpp, device, epoch_test_
 
     return best_test_loss, epoch_test_loss
 
+def train_val_dataset(dataset, val_split=0.25):
+    train_idx, val_idx = train_test_split(list(range(len(dataset))), test_size=val_split)
+    trainset = Subset(dataset, train_idx)
+    valset = Subset(dataset, val_idx)
+    return trainset, valset
+
 
 def train(args, model, train_loader, test_loader, device, logger, optimizers):
 
@@ -316,31 +322,29 @@ if __name__ == '__main__':
 
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-    trainset = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
-                                          shuffle=True, num_workers=2)
+    wholeset = torchvision.datasets.Caltech101(root=C101Root, download=False, transform=transform)
 
-    testset = torchvision.datasets.Caltech101(root=C101Root, train=False,
-                                       download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=4,
-                                         shuffle=False, num_workers=2)
+    trainset, testset = train_val_dataset(wholeset)
 
-    test_loader = datasets.get_dataloaders(args.dataset,
-                                root=args.dataset_path,
-                                batch_size=args.batch_size,
-                                logger=logger,
-                                mode='validation',
-                                shuffle=True,
-                                normalize=args.normalize_input_image)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    train_loader = datasets.get_dataloaders(args.dataset,
-                                root=args.dataset_path,
-                                batch_size=args.batch_size,
-                                logger=logger,
-                                mode='train',
-                                shuffle=True,
-                                normalize=args.normalize_input_image)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+
+    #test_loader = datasets.get_dataloaders(args.dataset,
+    #                            root=args.dataset_path,
+    #                            batch_size=args.batch_size,
+    #                            logger=logger,
+    #                            mode='validation',
+    #                            shuffle=True,
+    #                            normalize=args.normalize_input_image)
+
+    #train_loader = datasets.get_dataloaders(args.dataset,
+    #                            root=args.dataset_path,
+    #                            batch_size=args.batch_size,
+    #                            logger=logger,
+    #                            mode='train',
+    #                            shuffle=True,
+    #                            normalize=args.normalize_input_image)
 
     args.n_data = len(train_loader.dataset)
     args.image_dims = train_loader.dataset.image_dims
