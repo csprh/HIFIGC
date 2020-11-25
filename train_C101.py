@@ -331,9 +331,9 @@ if __name__ == '__main__':
 
     transform = transforms.Compose([transforms.Grayscale(3), transforms.Resize((W, H)),  transforms.ToTensor()])
 
-    wholeset = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transform)
-
+    #wholeset = torchvision.datasets.Caltech101(root=C101Root,
+                                       # download=False, transform=transform)
+    wholeset = torchvision.datasets.Caltech101(root=C101Root,download=False)
     wholeset.image_dims = (3, W, H)
 
     trainset, testset = train_val_dataset(wholeset, val_split=0.25)
