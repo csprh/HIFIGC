@@ -311,6 +311,7 @@ if __name__ == '__main__':
 
     classi_parameters = model.Classi.parameters()
     classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
+
     optimizers['classi'] = classi_opt
 
     n_gpus = torch.cuda.device_count()
