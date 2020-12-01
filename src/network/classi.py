@@ -41,4 +41,5 @@ if __name__ == "__main__":
     x = torch.randn((B,220,16,16))
     x_dims = tuple(x.size())
     C = Classi(image_dims=x_dims[1:], batch_size=B, C=101)
+    C(x)
 
