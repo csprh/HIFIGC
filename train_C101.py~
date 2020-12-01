@@ -94,7 +94,7 @@ def train_val_dataset(dataset, val_split=0.25):
     return trainset, valset
 
 
-def train(args, model, train_loader, test_loader, device, logger, optimizers):
+def train(args, model, train_loader, test_loader, device, logger, optimizers, bpp):
 
     start_time = time.time()
     test_loader_iter = iter(test_loader)
@@ -119,7 +119,8 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers):
 
         model.train()
 
-        for idx, (data, bpp) in enumerate(tqdm(train_loader, desc='Train'), 0):
+        for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
+
 
             data = data.to(device, dtype=torch.float)
 
@@ -163,7 +164,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers):
 
                 best_loss = utils.log(model, storage, epoch, idx, mean_epoch_loss, compression_loss.item(),
                                 best_loss, start_time, epoch_start_time, batch_size=data.shape[0],
-                                avg_bpp=bpp.mean().item(), logger=logger, writer=train_writer)
+                                avg_bpp=bpp, logger=logger, writer=train_writer)
                 try:
                     test_data, test_bpp = test_loader_iter.next()
                 except StopIteration:
@@ -371,7 +372,7 @@ if __name__ == '__main__':
     """
     Train
     """
-    model, ckpt_path = train(args, model, train_loader, test_loader, device, logger, optimizers=optimizers)
+    model, ckpt_path = train(args, model, train_loader, test_loader, device, logger, optimizers=optimizers, bpp = 8*W*H*3)
 
     """
     TODO
