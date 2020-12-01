@@ -87,9 +87,9 @@ def test(args, model, epoch, idx, data, test_data, test_bpp, device, epoch_test_
 
     return best_test_loss, epoch_test_loss
 
-def train_val_dataset(dataset, test_split=0.1, val_split=0.1):
+def train_test_val_dataset(dataset, test_split=0.1, val_split=0.1):
     train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split)
-    train_idx, val_idx = train_test_split(list(range(len(train_init_idx))), val_size=val_split)
+    train_idx, val_idx = train_test_split(list(range(len(train_init_idx))), test_size=val_split)
     trainset = Subset(dataset, train_idx)
     valset = Subset(dataset, val_idx)
     testset = Subset(dataset, test_idx)
@@ -339,7 +339,7 @@ if __name__ == '__main__':
                                         download=False, transform=transform)
     wholeset.image_dims = (3, W, H)
 
-    trainset, testset, valset = train_val_dataset(wholeset, test_split=0.1, val_split=0.1)
+    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1)
     #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
