@@ -87,11 +87,13 @@ def test(args, model, epoch, idx, data, test_data, test_bpp, device, epoch_test_
 
     return best_test_loss, epoch_test_loss
 
-def train_val_dataset(dataset, val_split=0.25):
-    train_idx, val_idx = train_test_split(list(range(len(dataset))), test_size=val_split)
+def train_val_dataset(dataset, test_split=0.1, val_split=0.1):
+    train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split)
+    train_idx, val_idx = train_test_split(list(range(len(train_init_idx))), val_size=val_split)
     trainset = Subset(dataset, train_idx)
     valset = Subset(dataset, val_idx)
-    return trainset, valset
+    testset = Subset(dataset, test_idx)
+    return trainset, valset, testset
 
 
 def train(args, model, train_loader, test_loader, device, logger, optimizers, bpp):
@@ -337,7 +339,8 @@ if __name__ == '__main__':
                                         download=False, transform=transform)
     wholeset.image_dims = (3, W, H)
 
-    trainset, testset = train_val_dataset(wholeset, val_split=0.25)
+    trainset, testset, valset = train_val_dataset(dataset, test_split=0.1, val_split=0.1)
+    #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
@@ -376,7 +379,7 @@ if __name__ == '__main__':
 
     """
 
-    python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart --ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
     TODO
     Generate metrics
     """
