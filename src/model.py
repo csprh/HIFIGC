@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from src import hyperprior
 from src.loss import losses
 from src.helpers import maths, datasets, utils
-from src.network import encoder, generator, discriminator, hyper
+from src.network import encoder, generator, discriminator, hyper, classi
 from src.loss.perceptual_similarity import perceptual_loss as ps
 
 from default_config import ModelModes, ModelTypes, hific_args, directories
@@ -103,6 +103,7 @@ class Model(nn.Module):
         self.squared_difference = torch.nn.MSELoss(reduction='none')
         # Expects [-1,1] images or [0,1] with normalize=True flag
         self.perceptual_loss = ps.PerceptualLoss(model='net-lin', net='alex', use_gpu=torch.cuda.is_available(), gpu_ids=[args.gpu])
+        self.Classi = classi.Classi(self.image_dims, self.batch_size, C=101)
 
     def store_loss(self, key, loss):
         assert type(loss) == float, 'Call .item() on loss before storage'
