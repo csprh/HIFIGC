@@ -12,7 +12,7 @@ class Classi(nn.Module):
         super(Classi, self).__init__()
         #B, 220, 16,16 >  #B, 8, 16,16
         self.c1 = nn.Conv2d(220, 8, kernel_size=(5,5), stride=1)
-        self.b1 = nn.BatchNorm2D(8)
+        self.b1 = nn.BatchNorm2d(8)
         self.d1 = nn.Dropout2d(0.5)
         #self.f1 = nn.Flatten(2048)
         self.l1 = nn.Linear(2048,C)
