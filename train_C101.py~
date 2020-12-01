@@ -88,8 +88,8 @@ def test(args, model, epoch, idx, data, test_data, test_bpp, device, epoch_test_
     return best_test_loss, epoch_test_loss
 
 def train_test_val_dataset(dataset, test_split=0.1, val_split=0.1, random_state=1):
-    train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split, random_state)
-    train_idx, val_idx = train_test_split(list(range(len(train_init_idx))), test_size=val_split, random_state)
+    train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size, random_state)
+    train_idx, val_idx = train_test_split(list(range(len(train_init_idx))), test_size, random_state)
     trainset = Subset(dataset, train_idx)
     valset = Subset(dataset, val_idx)
     testset = Subset(dataset, test_idx)
