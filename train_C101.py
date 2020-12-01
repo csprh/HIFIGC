@@ -87,9 +87,9 @@ def test(args, model, epoch, idx, data, test_data, test_bpp, device, epoch_test_
 
     return best_test_loss, epoch_test_loss
 
-def train_test_val_dataset(dataset, test_split=0.1, val_split=0.1):
-    train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split)
-    train_idx, val_idx = train_test_split(list(range(len(train_init_idx))), test_size=val_split)
+def train_test_val_dataset(dataset, test_split=0.1, val_split=0.1, random_state=1):
+    train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split, random_state)
+    train_idx, val_idx = train_test_split(list(range(len(train_init_idx))), test_size=val_split, random_state)
     trainset = Subset(dataset, train_idx)
     valset = Subset(dataset, val_idx)
     testset = Subset(dataset, test_idx)
@@ -309,6 +309,11 @@ if __name__ == '__main__':
             disc_opt = torch.optim.Adam(discriminator_parameters, lr=args.learning_rate)
             optimizers['disc'] = disc_opt
 
+    classi_parameters = model.Classi.parameters()
+    classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
+
+    optimizers['classi'] = classi_opt
+
     n_gpus = torch.cuda.device_count()
     if n_gpus > 1 and args.multigpu is True:
         # Not supported at this time
@@ -339,7 +344,7 @@ if __name__ == '__main__':
                                         download=False, transform=transform)
     wholeset.image_dims = (3, W, H)
 
-    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1)
+    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
     #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
