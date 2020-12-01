@@ -455,7 +455,7 @@ class Model(nn.Module):
         assert self.model_mode == ModelModes.EVALUATION and (self.training is False), (
             f'Set model mode to {ModelModes.EVALUATION} for decompression.')
 
-        latents_decoded = self.Hyperprior.decompress_forward(compression_output, device=utils.get_device())
+        latents_decoded, hyper_decoded = self.Hyperprior.decompress_forwardDump(compression_output, device=utils.get_device())
 
         # Use quantized latents as input to G
         reconstruction = self.Generator(latents_decoded)
@@ -473,7 +473,7 @@ class Model(nn.Module):
 
         reconstruction = torch.clamp(reconstruction, min=0., max=1.)
 
-        return reconstruction, latents_decoded
+        return reconstruction, latents_decoded, hyper_decoded
 
     def forward(self, x, train_generator=False, return_intermediates=False, writeout=True):
 

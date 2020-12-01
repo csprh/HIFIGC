@@ -375,6 +375,8 @@ if __name__ == '__main__':
     model, ckpt_path = train(args, model, train_loader, test_loader, device, logger, optimizers=optimizers, bpp = 8*W*H*3)
 
     """
+
+    python3 train.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart --ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
     TODO
     Generate metrics
     """

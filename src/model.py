@@ -309,54 +309,6 @@ class Model(nn.Module):
         return compression_output
 
 
-    def compress(self, x, silent=False):
-
-        """
-        * Pass image through encoder to obtain latents: x -> Encoder() -> y
-        * Pass latents through hyperprior encoder to obtain hyperlatents:
-          y -> hyperencoder() -> z
-        * Encode hyperlatents via nonparametric entropy model.
-        * Pass hyperlatents through mean-scale hyperprior decoder to obtain mean,
-          scale over latents: z -> hyperdecoder() -> (mu, sigma).
-        * Encode latents via entropy model derived from (mean, scale) hyperprior output.
-        """
-
-        assert self.model_mode == ModelModes.EVALUATION and (self.training is False), (
-            f'Set model mode to {ModelModes.EVALUATION} for compression.')
-
-        spatial_shape = tuple(x.size()[2:])
-
-        if self.model_mode == ModelModes.EVALUATION and (self.training is False):
-            n_encoder_downsamples = self.Encoder.n_downsampling_layers
-            factor = 2 ** n_encoder_downsamples
-            x = utils.pad_factor(x, x.size()[2:], factor)
-
-        # Encoder forward pass
-        y = self.Encoder(x)
-
-        if self.model_mode == ModelModes.EVALUATION and (self.training is False):
-            n_hyperencoder_downsamples = self.Hyperprior.analysis_net.n_downsampling_layers
-            factor = 2 ** n_hyperencoder_downsamples
-            y = utils.pad_factor(y, y.size()[2:], factor)
-
-        compression_output = self.Hyperprior.compress_forward(y, spatial_shape)
-        attained_hbpp = 32 * len(compression_output.hyperlatents_encoded) / np.prod(spatial_shape)
-        attained_lbpp = 32 * len(compression_output.latents_encoded) / np.prod(spatial_shape)
-        attained_bpp = 32 * ((len(compression_output.hyperlatents_encoded) +
-            len(compression_output.latents_encoded)) / np.prod(spatial_shape))
-
-        if silent is False:
-            self.logger.info('[ESTIMATED]')
-            self.logger.info(f'BPP: {compression_output.total_bpp:.3f}')
-            self.logger.info(f'HL BPP: {compression_output.hyperlatent_bpp:.3f}')
-            self.logger.info(f'L BPP: {compression_output.latent_bpp:.3f}')
-
-            self.logger.info('[ATTAINED]')
-            self.logger.info(f'BPP: {attained_bpp:.3f}')
-            self.logger.info(f'HL BPP: {attained_hbpp:.3f}')
-            self.logger.info(f'L BPP: {attained_lbpp:.3f}')
-
-        return compression_output
 
     def compressDump(self, x, silent=False):
 

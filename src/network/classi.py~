@@ -15,7 +15,7 @@ class Classi(nn.Module):
         self.b1 = nn.BatchNorm2d(8)
         self.d1 = nn.Dropout2d(0.5)
         #self.f1 = nn.Flatten(2048)
-        self.l1 = nn.Linear(2048,C)
+        self.l1 = nn.Linear(1152,C)
 
     def forward(self, x):
         x = F.relu(self.c1(x))

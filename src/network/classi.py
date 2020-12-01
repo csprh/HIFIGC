@@ -14,15 +14,14 @@ class Classi(nn.Module):
         self.c1 = nn.Conv2d(220, 8, kernel_size=(5,5), stride=1)
         self.b1 = nn.BatchNorm2d(8)
         self.d1 = nn.Dropout2d(0.5)
-        #self.f1 = nn.Flatten(2048)
-        self.l1 = nn.Linear(1152,C)
+        self.l1 = nn.Linear(1152,C) #8*12*12
 
     def forward(self, x):
         x = F.relu(self.c1(x))
         x = self.b1(x)
         x = F.dropout(x, training=self.training)
         x = x.view(x.shape[0], -1)
-        #x = x.view(-1, self.num_flat_features(x))
+
         x = self.l1(x)
         result = F.softmax(x)
         return result
