@@ -278,7 +278,8 @@ if __name__ == '__main__':
         args = classi_only
 
     start_time = time.time()
-    device = utils.get_device()
+    is_gpu=True
+    device = utils.get_device(is_gpu=is_gpu)
 
     # Override default arguments from config file with provided command line arguments
     dictify = lambda x: dict((n, getattr(x, n)) for n in dir(x) if not (n.startswith('__') or 'logger' in n))
@@ -397,7 +398,7 @@ if __name__ == '__main__':
     """
 
     python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
-    python3 -m pudb.run train_C101.py --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -m pudb.run train_C101.py -bs 8 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
 
     TODO
     Generate metrics

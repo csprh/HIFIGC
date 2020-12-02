@@ -127,7 +127,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
 
 
             data = data.to(device, dtype=torch.float)
-
+            y = data.to(y, dtype=torch.float)
             try:
                 if model.use_classiOnly is True:
                     losses = model(data, y, train_generator=False)
@@ -398,7 +398,7 @@ if __name__ == '__main__':
     """
 
     python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
-    python3 -m pudb.run train_C101.py --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -m pudb.run train_C101.py -bs 8 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
 
     TODO
     Generate metrics
