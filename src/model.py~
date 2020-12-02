@@ -212,7 +212,7 @@ class Model(nn.Module):
         y = intermediates.yclass
 
         #output_loss = nn.CrossEntropyLoss()(yhat, y)
-        output_loss = 0
+        output_loss = 1
         return output_loss
 
     def compression_loss(self, intermediates, hyperinfo):
