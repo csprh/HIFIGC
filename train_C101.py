@@ -27,7 +27,7 @@ from sklearn.model_selection import train_test_split
 # Custom modules
 from src.model import Model
 from src.helpers import utils, datasets
-from default_config import hific_args, mse_lpips_args, directories, ModelModes, ModelTypes
+from default_config import classi_only, hific_args, mse_lpips_args, directories, ModelModes, ModelTypes
 
 # go fast boi!!
 torch.backends.cudnn.benchmark = True
