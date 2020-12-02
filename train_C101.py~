@@ -127,7 +127,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
 
 
             data = data.to(device, dtype=torch.float)
-            y = data.to(y, dtype=torch.float)
+            y = y.to(device)
             try:
                 if model.use_classiOnly is True:
                     losses = model(data, y, train_generator=False)

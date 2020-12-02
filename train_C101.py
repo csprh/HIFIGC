@@ -179,7 +179,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                 except StopIteration:
                     test_loader_iter = iter(test_loader)
                     test_data, ytest = test_loader_iter.next()
-
+                ytest = ytest.to(device)
                 best_test_loss, epoch_test_loss = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
                      best_test_loss, start_time, epoch_start_time, logger, train_writer, test_writer)
 
