@@ -23,7 +23,7 @@ class Classi(nn.Module):
 
         x = self.l1(x)
         result = F.softmax(x)
-        return result
+        return x
 
 
 if __name__ == "__main__":
