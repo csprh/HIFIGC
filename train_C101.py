@@ -278,7 +278,7 @@ if __name__ == '__main__':
         args = classi_only
 
     start_time = time.time()
-    device = utils.get_device()
+    device = utils.get_device(is_gpu=False)
 
     # Override default arguments from config file with provided command line arguments
     dictify = lambda x: dict((n, getattr(x, n)) for n in dir(x) if not (n.startswith('__') or 'logger' in n))
