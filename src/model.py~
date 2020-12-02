@@ -211,8 +211,8 @@ class Model(nn.Module):
         yhat = intermediates.yhat_class
         y = intermediates.yclass
 
-        output_loss = nn.CrossEntropyLoss()(yhat, y)
-
+        #output_loss = nn.CrossEntropyLoss()(yhat, y)
+        output_loss = 0
         return output_loss
 
     def compression_loss(self, intermediates, hyperinfo):
@@ -468,7 +468,7 @@ class Model(nn.Module):
 
         compression_model_loss = self.compression_loss(intermediates, hyperinfo)
 
-        classi_model_loss = self.classi_loss(intermediates, hyperinfo)
+        classi_model_loss = self.classi_loss(intermediates)
 
         if self.use_discriminator is True:
             # Only send gradients to generator when training generator via
