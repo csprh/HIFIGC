@@ -84,7 +84,7 @@ def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_
 
         best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
                                      best_test_loss, start_time, epoch_start_time,
-                                     batch_size=data.shape[0], 0,header='[TEST]',
+                                     batch_size=data.shape[0],avg_bpp=0 ,header='[TEST]',
                                      logger=logger, writer=test_writer)
 
     return best_test_loss, epoch_test_loss
