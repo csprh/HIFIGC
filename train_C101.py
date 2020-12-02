@@ -60,29 +60,31 @@ def optimize_compression_loss(compression_loss, amortization_opt, hyperlatent_li
     amortization_opt.zero_grad()
     hyperlatent_likelihood_opt.zero_grad()
 
-def test(args, model, epoch, idx, data, test_data, test_bpp, device, epoch_test_loss, storage, best_test_loss,
+def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage, best_test_loss,
          start_time, epoch_start_time, logger, train_writer, test_writer):
 
     model.eval()
     with torch.no_grad():
         data = data.to(device, dtype=torch.float)
 
-        losses, intermediates = model(data, return_intermediates=True, writeout=False)
+        losses, intermediates = model(data, y, return_intermediates=True, writeout=False)
         utils.save_images(train_writer, model.step_counter, intermediates.input_image, intermediates.reconstruction,
             fname=os.path.join(args.figures_save, 'recon_epoch{}_idx{}_TRAIN_{:%Y_%m_%d_%H:%M}.jpg'.format(epoch, idx, datetime.datetime.now())))
 
         test_data = test_data.to(device, dtype=torch.float)
-        losses, intermediates = model(test_data, return_intermediates=True, writeout=True)
+        losses, intermediates = model(test_data, ytest, return_intermediates=True, writeout=True)
         utils.save_images(test_writer, model.step_counter, intermediates.input_image, intermediates.reconstruction,
             fname=os.path.join(args.figures_save, 'recon_epoch{}_idx{}_TEST_{:%Y_%m_%d_%H:%M}.jpg'.format(epoch, idx, datetime.datetime.now())))
 
         compression_loss = losses['compression']
+
+        classi_loss = losses['classi']
         epoch_test_loss.append(compression_loss.item())
         mean_test_loss = np.mean(epoch_test_loss)
 
         best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
                                      best_test_loss, start_time, epoch_start_time,
-                                     batch_size=data.shape[0], avg_bpp=test_bpp.mean().item(),header='[TEST]',
+                                     batch_size=data.shape[0], 0,header='[TEST]',
                                      logger=logger, writer=test_writer)
 
     return best_test_loss, epoch_test_loss
@@ -106,7 +108,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
     test_writer = SummaryWriter(os.path.join(args.tensorboard_runs, 'test'))
     storage, storage_test = model.storage_train, model.storage_test
 
-    amortization_opt, hyperlatent_likelihood_opt = optimizers['amort'], optimizers['hyper']
+    classi_opt, amortization_opt, hyperlatent_likelihood_opt = optimizers['classi'], optimizers['amort'], optimizers['hyper']
     if model.use_discriminator is True:
         disc_opt = optimizers['disc']
 
@@ -127,9 +129,14 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
             data = data.to(device, dtype=torch.float)
 
             try:
+                if model.use_classiOnly is True:
+                    losses = model(data, y, train_generator=False)
+                    classi_loss = losses['classi']
+                    optimize_loss(classi_loss, classi_opt)
+
                 if model.use_discriminator is True:
                     # Train D for D_steps, then G, using distinct batches
-                    losses = model(data, train_generator=train_generator)
+                    losses = model(data, y, train_generator=train_generator)
                     compression_loss = losses['compression']
                     disc_loss = losses['disc']
 
@@ -147,7 +154,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                         continue
                 else:
                     # Rate, distortion, perceptual only
-                    losses = model(data, train_generator=True)
+                    losses = model(data, y, train_generator=True)
                     compression_loss = losses['compression']
                     optimize_compression_loss(compression_loss, amortization_opt, hyperlatent_likelihood_opt)
 
@@ -168,12 +175,12 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                                 best_loss, start_time, epoch_start_time, batch_size=data.shape[0],
                                 avg_bpp=bpp, logger=logger, writer=train_writer)
                 try:
-                    test_data, test_bpp = test_loader_iter.next()
+                    test_data, ytest = test_loader_iter.next()
                 except StopIteration:
                     test_loader_iter = iter(test_loader)
-                    test_data, test_bpp = test_loader_iter.next()
+                    test_data, ytest = test_loader_iter.next()
 
-                best_test_loss, epoch_test_loss = test(args, model, epoch, idx, data, test_data, test_bpp, device, epoch_test_loss, storage_test,
+                best_test_loss, epoch_test_loss = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
                      best_test_loss, start_time, epoch_start_time, logger, train_writer, test_writer)
 
                 with open(os.path.join(args.storage_save, 'storage_{}_tmp.pkl'.format(args.name)), 'wb') as handle:
@@ -182,6 +189,8 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                 model.train()
 
                 # LR scheduling
+                if model.use_classiOnly is True:
+                    utils.update_lr(args, classi_opt, model.step_counter, logger)
                 utils.update_lr(args, amortization_opt, model.step_counter, logger)
                 utils.update_lr(args, hyperlatent_likelihood_opt, model.step_counter, logger)
                 if model.use_discriminator is True:
@@ -223,7 +232,7 @@ if __name__ == '__main__':
     # General options - see `default_config.py` for full options
     general = parser.add_argument_group('General options')
     general.add_argument("-n", "--name", default=None, help="Identifier for checkpoints and metrics.")
-    general.add_argument("-mt", "--model_type", required=True, choices=(ModelTypes.COMPRESSION, ModelTypes.COMPRESSION_GAN),
+    general.add_argument("-mt", "--model_type", required=True, choices=(ModelTypes.COMPRESSION, ModelTypes.COMPRESSION_GAN, ModelTypes.CLASSI),
         help="Type of model - with or without GAN component")
     general.add_argument("-regime", "--regime", choices=('low','med','high'), default='low', help="Set target bit rate - Low (0.14), Med (0.30), High (0.45)")
     general.add_argument("-gpu", "--gpu", type=int, default=0, help="GPU ID.")
@@ -265,6 +274,8 @@ if __name__ == '__main__':
         args = mse_lpips_args
     elif cmd_args.model_type == ModelTypes.COMPRESSION_GAN:
         args = hific_args
+    elif cmd_args.model_type == ModelTypes.CLASSI_ONLY:
+        args = classi_only
 
     start_time = time.time()
     device = utils.get_device()
@@ -351,6 +362,7 @@ if __name__ == '__main__':
 
     test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
+    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
     #test_loader = datasets.get_dataloaders(args.dataset,
     #                            root=args.dataset_path,
     #                            batch_size=args.batch_size,
@@ -380,11 +392,13 @@ if __name__ == '__main__':
     """
     Train
     """
-    model, ckpt_path = train(args, model, train_loader, test_loader, device, logger, optimizers=optimizers, bpp = 8*W*H*3)
+    model, ckpt_path = train(args, model, train_loader, val_loader, device, logger, optimizers=optimizers, bpp = 8*W*H*3)
 
     """
 
     python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -m pudb.run train_C101.py --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+
     TODO
     Generate metrics
     """

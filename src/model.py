@@ -23,6 +23,8 @@ from default_config import ModelModes, ModelTypes, hific_args, directories
 
 Intermediates = namedtuple("Intermediates",
     ["input_image",             # [0, 1] (after scaling from [0, 255])
+     "yhat_class",
+     "yclass",
      "reconstruction",          # [0, 1]
      "latents_quantized",       # Latents post-quantization.
      "n_bpp",                   # Differential entropy estimate.
@@ -88,6 +90,8 @@ class Model(nn.Module):
             and (self.model_mode != ModelModes.EVALUATION)
         )
 
+        self.use_classiOnly = self.model_type == ModelTypes.CLASSI_ONLY
+
         if self.use_discriminator is True:
             assert self.args.discriminator_steps > 0, 'Must specify nonzero training steps for D!'
             self.discriminator_steps = self.args.discriminator_steps
@@ -117,7 +121,7 @@ class Model(nn.Module):
             storage[key].append(loss)
 
 
-    def compression_forward(self, x):
+    def compression_forward(self, x, yclass):
         """
         Forward pass through encoder, hyperprior, and decoder.
 
@@ -150,6 +154,8 @@ class Model(nn.Module):
         total_nbpp = hyperinfo.total_nbpp
         total_qbpp = hyperinfo.total_qbpp
 
+        yhat_class = self.Classi(latents_quantized)
+
         # Use quantized latents as input to G
         reconstruction = self.Generator(latents_quantized)
 
@@ -160,7 +166,7 @@ class Model(nn.Module):
         if self.model_mode == ModelModes.EVALUATION and (self.training is False):
             reconstruction = reconstruction[:, :, :image_dims[1], :image_dims[2]]
 
-        intermediates = Intermediates(x, reconstruction, latents_quantized,
+        intermediates = Intermediates(x, yhat_class, yclass, reconstruction, latents_quantized,
             total_nbpp, total_qbpp)
 
         return intermediates, hyperinfo
@@ -198,6 +204,16 @@ class Model(nn.Module):
         """ Assumes inputs are in [0, 1] if normalize=True, else [-1, 1] """
         LPIPS_loss = self.perceptual_loss.forward(x_gen, x_real, normalize=normalize)
         return torch.mean(LPIPS_loss)
+
+
+    def classi_loss(self, intermediates):
+
+        yhat = intermediates.yhat_class
+        y = intermediates.yclass
+
+        output_loss = nn.CrossEntropyLoss()(yhat, y)
+
+        return output_loss
 
     def compression_loss(self, intermediates, hyperinfo):
 
@@ -428,7 +444,7 @@ class Model(nn.Module):
 
         return reconstruction, latents_decoded, hyper_decoded
 
-    def forward(self, x, train_generator=False, return_intermediates=False, writeout=True):
+    def forward(self, x, yclass, train_generator=False, return_intermediates=False, writeout=True):
 
         self.writeout = writeout
 
@@ -437,7 +453,7 @@ class Model(nn.Module):
             # Define a 'step' as one cycle of G-D training
             self.step_counter += 1
 
-        intermediates, hyperinfo = self.compression_forward(x)
+        intermediates, hyperinfo = self.compression_forward(x, yclass)
 
         if self.model_mode == ModelModes.EVALUATION:
 
@@ -452,6 +468,8 @@ class Model(nn.Module):
 
         compression_model_loss = self.compression_loss(intermediates, hyperinfo)
 
+        classi_model_loss = self.classi_loss(intermediates)
+
         if self.use_discriminator is True:
             # Only send gradients to generator when training generator via
             # `train_generator` flag
@@ -461,6 +479,8 @@ class Model(nn.Module):
             losses['disc'] = D_loss
 
         losses['compression'] = compression_model_loss
+        losses['classi'] = classi_model_loss
+
 
         # Bookkeeping
         if (self.step_counter % self.log_interval == 1):

@@ -10,7 +10,6 @@ command line arguments in `train.py`.
 class ModelTypes(object):
     COMPRESSION = 'compression'
     COMPRESSION_GAN = 'compression_gan'
-    CLASSI_ONLY = 'classi_only'
 
 class ModelModes(object):
     TRAINING = 'training'
@@ -63,12 +62,12 @@ class args(object):
     use_channel_norm = True
     likelihood_type = 'gaussian'    # Latent likelihood model
     normalize_input_image = False   # Normalize inputs to range [-1,1]
-
+    
     # Shapes
     crop_size = 256
     image_dims = (3,256,256)
     latent_dims = (latent_channels,16,16)
-
+    
     # Optimizer params
     learning_rate = 1e-4
     weight_decay = 1e-6
@@ -97,17 +96,10 @@ Specialized configs
 
 class mse_lpips_args(args):
     """
-    Config for model trained with distortion and
+    Config for model trained with distortion and 
     perceptual loss only.
     """
     model_type = ModelTypes.COMPRESSION
-
-class classi_only(args):
-    """
-    Config for model classi_only
-    perceptual loss only.
-    """
-    model_type = ModelTypes.CLASSI_ONLY
 
 class hific_args(args):
     """
