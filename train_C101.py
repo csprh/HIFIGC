@@ -230,7 +230,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     losses = model(data, y, train_generator=False)
                     classi_loss = losses['classi']
                     optimize_loss(classi_loss, classi_opt)
-
+                else:
                   if model.use_discriminator is True:
                     # Train D for D_steps, then G, using distinct batches
                     losses = model(data, y, train_generator=train_generator)
