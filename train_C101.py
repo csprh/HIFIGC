@@ -222,7 +222,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
 
         for idx, (data, y, filenames) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
-            in_path=os.path.join(args.output_dir, f"{filenames[0]}_compressed.hfc"))
+            #in_path=os.path.join(args.output_dir, f"{filenames[0]}_compressed.hfc"))
             data = data.to(device, dtype=torch.float)
             y = y.to(device)
             try:
