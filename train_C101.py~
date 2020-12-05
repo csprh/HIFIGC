@@ -99,7 +99,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
     with torch.no_grad():
 
-        for idx, (data, y) in enumerate(tqdm(eval_loader), 0):
+        for idx, (data, y) in enumerate(tqdm(data_loader), 0):
             data = data.to(device, dtype=torch.float)
             y = y.to(device)
             B = data.size(0)

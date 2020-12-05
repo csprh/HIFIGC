@@ -109,7 +109,7 @@ class Model(nn.Module):
         self.perceptual_loss = ps.PerceptualLoss(model='net-lin', net='alex', use_gpu=torch.cuda.is_available(), gpu_ids=[args.gpu])
         self.Classi = classi.Classi(self.image_dims, self.batch_size, C=101) #PRH
 
-    def set_model_mode(in_model_mode):
+    def set_model_mode(self, in_model_mode):
         self.model_mode = in_model_mode
         self.use_discriminator = (
             self.model_type == ModelTypes.COMPRESSION_GAN
