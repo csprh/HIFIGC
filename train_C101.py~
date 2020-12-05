@@ -60,6 +60,103 @@ def optimize_compression_loss(compression_loss, amortization_opt, hyperlatent_li
     amortization_opt.zero_grad()
     hyperlatent_likelihood_opt.zero_grad()
 
+
+
+def end_of_epoch_metrics(args, model, data_loader, device, logger):
+
+    """
+    n, N = 0, len(eval_loader.dataset)
+    input_filenames_total = list()
+    output_filenames_total = list()
+    bpp_total, q_bpp_total, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
+    MS_SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
+    max_value = 255.
+    MS_SSIM_func = metrics.MS_SSIM(data_range=max_value)
+    utils.makedirs(args.output_dir)
+
+    logger.info('Starting compression...')
+    start_time = time.time()
+
+    with torch.no_grad():
+
+        for idx, (data, y, filenames) in enumerate(tqdm(eval_loader), 0):
+            data = data.to(device, dtype=torch.float)
+            y = y.to(device)
+            B = data.size(0)
+            input_filenames_total.extend(filenames)
+            losses, intermediates = model(data, y, return_intermediates=True, writeout=False)
+            best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
+                                     best_test_loss, start_time, epoch_start_time,
+                                     batch_size=data.shape[0],avg_bpp=0 ,header='[VALID]',
+                                     logger=logger, writer=test_writer)
+
+
+            if args.reconstruct is True:
+                # Reconstruction without compression
+                reconstruction, q_bpp = model(data, writeout=False)
+            else:
+                # Perform entropy coding
+                compressed_output = model.compress(data)
+
+                if args.save is True:
+                    assert B == 1, 'Currently only supports saving single images.'
+                    compression_utils.save_compressed_format(compressed_output,
+                        out_path=os.path.join(args.output_dir, f"{filenames[0]}_compressed.hfc"))
+
+                reconstruction = model.decompress(compressed_output)
+                q_bpp = compressed_output.total_bpp
+
+            if args.normalize_input_image is True:
+                # [-1., 1.] -> [0., 1.]
+                data = (data + 1.) / 2.
+
+            perceptual_loss = perceptual_loss_fn.forward(reconstruction, data, normalize=True)
+
+            if args.metrics is True:
+                # [0., 1.] -> [0., 255.]
+                psnr = metrics.psnr(reconstruction.cpu().numpy() * max_value, data.cpu().numpy() * max_value, max_value)
+                ms_ssim = MS_SSIM_func(reconstruction * max_value, data * max_value)
+                PSNR_total[n:n + B] = torch.Tensor(psnr)
+                MS_SSIM_total[n:n + B] = ms_ssim.data
+
+            for subidx in range(reconstruction.shape[0]):
+                if B > 1:
+                    q_bpp_per_im = float(q_bpp.cpu().numpy()[subidx])
+                else:
+                    q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
+
+                fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
+                torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
+                output_filenames_total.append(fname)
+
+            bpp_total[n:n + B] = bpp.data
+            q_bpp_total[n:n + B] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
+            LPIPS_total[n:n + B] = perceptual_loss.data
+            n += B
+
+    df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
+    df.columns = ['input_filename', 'output_filename']
+    df['bpp_original'] = bpp_total.cpu().numpy()
+    df['q_bpp'] = q_bpp_total.cpu().numpy()
+    df['LPIPS'] = LPIPS_total.cpu().numpy()
+
+    if args.metrics is True:
+        df['PSNR'] = PSNR_total.cpu().numpy()
+        df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
+
+    df_path = os.path.join(args.output_dir, 'compression_metrics.h5')
+    df.to_hdf(df_path, key='df')
+
+    pprint(df)
+
+    logger.info('Complete. Reconstructions saved to {}. Output statistics saved to {}'.format(args.output_dir, df_path))
+    delta_t = time.time() - start_time
+    logger.info('Time elapsed: {:.3f} s'.format(delta_t))
+    logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
+
+    """
+
+
 def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage, best_test_loss,
          start_time, epoch_start_time, logger, train_writer, test_writer):
 
@@ -123,9 +220,9 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
 
         model.train()
 
-        for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
+        for idx, (data, y, filenames) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
-
+            in_path=os.path.join(args.output_dir, f"{filenames[0]}_compressed.hfc"))
             data = data.to(device, dtype=torch.float)
             y = y.to(device)
             try:
@@ -134,7 +231,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     classi_loss = losses['classi']
                     optimize_loss(classi_loss, classi_opt)
 
-                if model.use_discriminator is True:
+                  if model.use_discriminator is True:
                     # Train D for D_steps, then G, using distinct batches
                     losses = model(data, y, train_generator=train_generator)
                     compression_loss = losses['compression']
@@ -152,7 +249,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                             train_generator = True
 
                         continue
-                else:
+                  else:
                     # Rate, distortion, perceptual only
                     losses = model(data, y, train_generator=True)
                     compression_loss = losses['compression']
@@ -179,7 +276,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                 except StopIteration:
                     test_loader_iter = iter(test_loader)
                     test_data, ytest = test_loader_iter.next()
-
+                ytest = ytest.to(device)
                 best_test_loss, epoch_test_loss = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
                      best_test_loss, start_time, epoch_start_time, logger, train_writer, test_writer)
 
@@ -341,6 +438,7 @@ if __name__ == '__main__':
     logger.info('USING GPU ID {}'.format(args.gpu))
     logger.info('USING DATASET: {}'.format(args.dataset))
     C101Root = '/space/csprh/DASA/DATABASES/'
+    args.C101Root = C101Root
 
     W = 256
     H = 256
