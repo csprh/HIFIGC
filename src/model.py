@@ -113,9 +113,9 @@ class Model(nn.Module):
         self.model_mode = in_model_mode
         self.use_discriminator = (
             self.model_type == ModelTypes.COMPRESSION_GAN
-            and (self.model_mode != ModelModes.EVALUATION)
+            and (in_model_mode != ModelModes.EVALUATION)
         )
-        if model_mode == ModelModes.EVALUATION:
+        if in_model_mode == ModelModes.EVALUATION:
             self.entropy_code = True
         else:
             self.entropy_code = False
