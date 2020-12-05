@@ -360,7 +360,8 @@ if __name__ == '__main__':
     general.add_argument("-lt", "--likelihood_type", choices=('gaussian', 'logistic'), default='gaussian', help="Likelihood model for latents.")
     general.add_argument("-force_gpu", "--force_set_gpu", help="Set GPU to given ID", action="store_true")
     general.add_argument("-LMM", "--use_latent_mixture_model", help="Use latent mixture model as latent entropy model.", action="store_true")
-
+    general.add_argument("-o", "--output_dir", type=str, default='data/reconstructions',
+        help="Path to directory to store output images")
     # Optimization-related options
     optim_args = parser.add_argument_group("Optimization-related options")
     optim_args.add_argument('-steps', '--n_steps', type=float, default=1e6,

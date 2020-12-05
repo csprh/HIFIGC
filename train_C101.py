@@ -104,12 +104,14 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             y = y.to(device)
             B = data.size(0)
 
-
+            model.set_model_mode(old_mode)
             losses = model(data, y, train_generator=False)
             compression_loss = losses['compression']
 
             if model.use_classiOnly is True:
                 classi_loss = losses['classi']
+
+            model.set_model_mode(ModelModes.EVALUATION)
             # Perform entropy coding
             compressed_output = model.compress(data)
 
