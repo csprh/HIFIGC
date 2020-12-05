@@ -109,6 +109,18 @@ class Model(nn.Module):
         self.perceptual_loss = ps.PerceptualLoss(model='net-lin', net='alex', use_gpu=torch.cuda.is_available(), gpu_ids=[args.gpu])
         self.Classi = classi.Classi(self.image_dims, self.batch_size, C=101) #PRH
 
+    def set_model_mode(in_model_mode):
+        self.model_mode = in_model_mode
+        self.use_discriminator = (
+            self.model_type == ModelTypes.COMPRESSION_GAN
+            and (self.model_mode != ModelModes.EVALUATION)
+        )
+        if model_mode == ModelModes.EVALUATION:
+            self.entropy_code = True
+        else:
+            self.entropy_code = False
+
+
     def store_loss(self, key, loss):
         assert type(loss) == float, 'Call .item() on loss before storage'
 

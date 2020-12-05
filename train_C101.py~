@@ -8,6 +8,8 @@ python3 train.py -h
 [1] Mentzer et. al., "High-Fidelity Generative Image Compression",
     arXiv:2006.09965 (2020).
 """
+from pprint import pprint
+import pandas as pd
 import numpy as np
 import os, glob, time, datetime
 import logging, pickle, argparse
@@ -20,13 +22,15 @@ import torch
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
+from src.compression import compression_utils
+from src.loss.perceptual_similarity import perceptual_loss as ps
 from torch.utils.tensorboard import SummaryWriter
 import torchvision.transforms as transforms
 from torch.utils.data import Subset
 from sklearn.model_selection import train_test_split
 # Custom modules
 from src.model import Model
-from src.helpers import utils, datasets
+from src.helpers import utils, datasets, metrics
 from default_config import classi_only, hific_args, mse_lpips_args, directories, ModelModes, ModelTypes
 
 # go fast boi!!
@@ -61,15 +65,31 @@ def optimize_compression_loss(compression_loss, amortization_opt, hyperlatent_li
     hyperlatent_likelihood_opt.zero_grad()
 
 
+def make_deterministic(seed=42):
+
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False  # Don't go fast boi :(
+
+    np.random.seed(seed)
+
 
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
-    """
-    n, N = 0, len(eval_loader.dataset)
+    old_mode = model.model_mode
+    model.set_model_mode(ModelModes.EVALUATION)
+
+    # Reproducibility
+    make_deterministic()
+    perceptual_loss_fn = ps.PerceptualLoss(model='net-lin', net='alex', use_gpu=torch.cuda.is_available())
+
+    n, N = 0, len(data_loader.dataset)
     input_filenames_total = list()
     output_filenames_total = list()
     bpp_total, q_bpp_total, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
     MS_SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
+    comp_loss_total, classi_loss_total = torch.Tensor(N), torch.Tensor(N)
     max_value = 255.
     MS_SSIM_func = metrics.MS_SSIM(data_range=max_value)
     utils.makedirs(args.output_dir)
@@ -79,32 +99,25 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
     with torch.no_grad():
 
-        for idx, (data, y, filenames) in enumerate(tqdm(eval_loader), 0):
+        for idx, (data, y) in enumerate(tqdm(eval_loader), 0):
             data = data.to(device, dtype=torch.float)
             y = y.to(device)
             B = data.size(0)
-            input_filenames_total.extend(filenames)
-            losses, intermediates = model(data, y, return_intermediates=True, writeout=False)
-            best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
-                                     best_test_loss, start_time, epoch_start_time,
-                                     batch_size=data.shape[0],avg_bpp=0 ,header='[VALID]',
-                                     logger=logger, writer=test_writer)
 
 
-            if args.reconstruct is True:
-                # Reconstruction without compression
-                reconstruction, q_bpp = model(data, writeout=False)
-            else:
-                # Perform entropy coding
-                compressed_output = model.compress(data)
+            losses = model(data, y, train_generator=False)
+            compression_loss = losses['compression']
 
-                if args.save is True:
-                    assert B == 1, 'Currently only supports saving single images.'
-                    compression_utils.save_compressed_format(compressed_output,
-                        out_path=os.path.join(args.output_dir, f"{filenames[0]}_compressed.hfc"))
+            if model.use_classiOnly is True:
+                classi_loss = losses['classi']
+            # Perform entropy coding
+            compressed_output = model.compress(data)
 
-                reconstruction = model.decompress(compressed_output)
-                q_bpp = compressed_output.total_bpp
+            if args.save is True and (B == 1):
+                    compression_utils.save_compressed_format(compressed_output, out_path=os.path.join(args.output_dir, "compressed.hfc"))
+
+            reconstruction = model.decompress(compressed_output)
+            q_bpp = compressed_output.total_bpp
 
             if args.normalize_input_image is True:
                 # [-1., 1.] -> [0., 1.]
@@ -125,18 +138,21 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
                 else:
                     q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
 
-                fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(filenames[subidx], q_bpp_per_im))
+                fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(idx, q_bpp_per_im))
                 torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
                 output_filenames_total.append(fname)
 
-            bpp_total[n:n + B] = bpp.data
+            #bpp_total[n:n + B] = bpp.data
             q_bpp_total[n:n + B] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
             LPIPS_total[n:n + B] = perceptual_loss.data
+            comp_loss_total[n:n + B] = compression_loss.data
+            if model.use_classiOnly is True:
+                classi_loss_total[n:n + B] = classi_loss.data
             n += B
 
     df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
-    df.columns = ['input_filename', 'output_filename']
-    df['bpp_original'] = bpp_total.cpu().numpy()
+    #df.columns = ['input_filename', 'output_filename']
+    #df['bpp_original'] = bpp_total.cpu().numpy()
     df['q_bpp'] = q_bpp_total.cpu().numpy()
     df['LPIPS'] = LPIPS_total.cpu().numpy()
 
@@ -154,7 +170,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     logger.info('Time elapsed: {:.3f} s'.format(delta_t))
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
 
-    """
+    model.set_model_mode(old_mode)
 
 
 def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage, best_test_loss,
@@ -220,9 +236,9 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
 
         model.train()
 
-        for idx, (data, y, filenames) in enumerate(tqdm(train_loader, desc='Train'), 0):
+        for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
-            #in_path=os.path.join(args.output_dir, f"{filenames[0]}_compressed.hfc"))
+
             data = data.to(device, dtype=torch.float)
             y = y.to(device)
             try:
@@ -230,7 +246,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     losses = model(data, y, train_generator=False)
                     classi_loss = losses['classi']
                     optimize_loss(classi_loss, classi_opt)
-
+                else:
                   if model.use_discriminator is True:
                     # Train D for D_steps, then G, using distinct batches
                     losses = model(data, y, train_generator=train_generator)
@@ -304,6 +320,8 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         mean_epoch_loss = np.mean(epoch_loss)
         mean_epoch_test_loss = np.mean(epoch_test_loss)
 
+        end_of_epoch_metrics(args, model, train_loader, device, logger)
+        end_of_epoch_metrics(args, model, test_loader, device, logger)
         logger.info('===>> Epoch {} | Mean train loss: {:.3f} | Mean test loss: {:.3f}'.format(epoch,
             mean_epoch_loss, mean_epoch_test_loss))
 
