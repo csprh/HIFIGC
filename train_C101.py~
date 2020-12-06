@@ -109,12 +109,11 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     with torch.no_grad():
         thisIndx =  0
         for idx1, (dataAll, yAll) in enumerate(tqdm(data_loader), 0):
-          dataAll = data.to(device, dtype=torch.float)
+          dataAll = dataAll.to(device, dtype=torch.float)
           yAll = yAll.to(device)
           B = data.size(0)
           for idxB in range(B):
-
-            data = data[idxB,:,:,:]
+            data = dataiAll[idxB,:,:,:]
             y = yAll[idxB,:,:,:]
             model.set_model_mode(old_mode)
             model.training = False
