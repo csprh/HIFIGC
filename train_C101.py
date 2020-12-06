@@ -110,7 +110,8 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
           B = dataAll.size(0)
           for idxB in range(B):
             data = dataAll[idxB,:,:,:]
-            y = yAll[idxB,:,:,:]
+            data = data.unsqueeze(0)
+            y = yAll[idxB]
             model.set_model_mode(old_mode)
             model.training = False
             losses = model(data, y, train_generator=False)
