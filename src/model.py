@@ -63,9 +63,9 @@ class Model(nn.Module):
         self.image_dims = self.args.image_dims  # Assign from dataloader
         self.batch_size = self.args.batch_size
 
-        self.entropy_code = False
-        if model_mode == ModelModes.EVALUATION:
-            self.entropy_code = True
+        #self.entropy_code = False
+        #if model_mode == ModelModes.EVALUATION:
+        self.entropy_code = True #PRH
 
         self.Encoder = encoder.Encoder(self.image_dims, self.batch_size, C=self.args.latent_channels,
             channel_norm=self.args.use_channel_norm)
