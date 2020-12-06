@@ -78,7 +78,8 @@ def make_deterministic(seed=42):
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
 
-    old_batch_size = data_loader.batch_size;
+    old_batch_size = data_loader.batch_size
+
     data_loader.batch_size = 1
     old_mode = model.model_mode
     model.set_model_mode(ModelModes.EVALUATION)
@@ -106,12 +107,15 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     start_time = time.time()
 
     with torch.no_grad():
+        thisIndx =  0
+        for idx1, (dataAll, yAll) in enumerate(tqdm(data_loader), 0):
+          dataAll = data.to(device, dtype=torch.float)
+          yAll = yAll.to(device)
+          B = data.size(0)
+          for idxB in range(B):
 
-        for idx, (data, y) in enumerate(tqdm(data_loader), 0):
-            data = data.to(device, dtype=torch.float)
-            y = y.to(device)
-            B = data.size(0)
-
+            data = data[idxB,:,:,:]
+            y = yAll[idxB,:,:,:]
             model.set_model_mode(old_mode)
             model.training = False
             losses = model(data, y, train_generator=False)
@@ -125,7 +129,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             # Perform entropy coding
             compressed_output = model.compress(data)
 
-            if args.save is True and (B == 1):
+            if args.save is True:
                     compression_utils.save_compressed_format(compressed_output, out_path=os.path.join(args.output_dir, "compressed.hfc"))
 
             reconstruction = model.decompress(compressed_output)
@@ -140,26 +144,21 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             # [0., 1.] -> [0., 255.]
             psnr = metrics.psnr(reconstruction.cpu().numpy() * max_value, data.cpu().numpy() * max_value, max_value)
             ms_ssim = MS_SSIM_func(reconstruction * max_value, data * max_value)
-            PSNR_total[n:n + B] = torch.Tensor(psnr)
-            MS_SSIM_total[n:n + B] = ms_ssim.data
+            PSNR_total[thisIndx] = torch.Tensor(psnr)
+            MS_SSIM_total[thisIndx] = ms_ssim.data
 
-            for subidx in range(reconstruction.shape[0]):
-                if B > 1:
-                    q_bpp_per_im = float(q_bpp.cpu().numpy()[subidx])
-                else:
-                    q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
+            q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
 
-                fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(idx, q_bpp_per_im))
-                torchvision.utils.save_image(reconstruction[subidx], fname, normalize=True)
-                output_filenames_total.append(fname)
+            fname = os.path.join(args.output_dir, "{}_RECON_{:.3f}bpp.png".format(thisIndx, q_bpp_per_im))
+            torchvision.utils.save_image(reconstruction, fname, normalize=True)
+            output_filenames_total.append(fname)
 
-            #bpp_total[n:n + B] = bpp.data
-            q_bpp_total[n:n + B] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
-            LPIPS_total[n:n + B] = perceptual_loss.data
-            comp_loss_total[n:n + B] = compression_loss.data
+            q_bpp_total[thisIndx] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
+            LPIPS_total[thisIndx] = perceptual_loss.data
+            comp_loss_total[thisIndx] = compression_loss.data
             if model.use_classiOnly is True:
-                classi_loss_total[n:n + B] = classi_loss.data
-            n += B
+                classi_loss_total[thisIndx] = classi_loss.data
+            thisIndx = thisIndx + 1
 
     df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
     #df.columns = ['input_filename', 'output_filename']
@@ -181,6 +180,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
 
     model.set_model_mode(old_mode)
+    data_loader.batch_size = old_batch_size
 
 
 def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage, best_test_loss,
