@@ -79,7 +79,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
     old_mode = model.model_mode
     model.set_model_mode(ModelModes.EVALUATION)
-
+    model.training = False
     # Reproducibility
     make_deterministic()
     perceptual_loss_fn = ps.PerceptualLoss(model='net-lin', net='alex', use_gpu=torch.cuda.is_available())
@@ -105,6 +105,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             B = data.size(0)
 
             model.set_model_mode(old_mode)
+            model.training = False
             losses = model(data, y, train_generator=False)
             compression_loss = losses['compression']
 
@@ -112,6 +113,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
                 classi_loss = losses['classi']
 
             model.set_model_mode(ModelModes.EVALUATION)
+            model.training = False
             # Perform entropy coding
             compressed_output = model.compress(data)
 
