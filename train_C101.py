@@ -84,6 +84,11 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     make_deterministic()
     perceptual_loss_fn = ps.PerceptualLoss(model='net-lin', net='alex', use_gpu=torch.cuda.is_available())
 
+    # Build probability tables
+    logger.info('Building hyperprior probability tables...')
+    model.Hyperprior.hyperprior_entropy_model.build_tables()
+    logger.info('All tables built.')
+
     n, N = 0, len(data_loader.dataset)
     input_filenames_total = list()
     output_filenames_total = list()
