@@ -77,6 +77,10 @@ def make_deterministic(seed=42):
 
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
+
+    old_batch_size = data_loader.batch_size
+
+    data_loader.batch_size = 1
     old_mode = model.model_mode
     model.set_model_mode(ModelModes.EVALUATION)
     model.training = False
@@ -178,6 +182,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
 
     model.set_model_mode(old_mode)
+    data_loader.batch_size = old_batch_size
 
 
 def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage, best_test_loss,

@@ -77,6 +77,9 @@ def make_deterministic(seed=42):
 
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
+
+    old_batch_size = data_loader.batch_size;
+    data_loader.batch_size = 1
     old_mode = model.model_mode
     model.set_model_mode(ModelModes.EVALUATION)
     model.training = False
@@ -134,12 +137,11 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
             perceptual_loss = perceptual_loss_fn.forward(reconstruction, data, normalize=True)
 
-            if args.metrics is True:
-                # [0., 1.] -> [0., 255.]
-                psnr = metrics.psnr(reconstruction.cpu().numpy() * max_value, data.cpu().numpy() * max_value, max_value)
-                ms_ssim = MS_SSIM_func(reconstruction * max_value, data * max_value)
-                PSNR_total[n:n + B] = torch.Tensor(psnr)
-                MS_SSIM_total[n:n + B] = ms_ssim.data
+            # [0., 1.] -> [0., 255.]
+            psnr = metrics.psnr(reconstruction.cpu().numpy() * max_value, data.cpu().numpy() * max_value, max_value)
+            ms_ssim = MS_SSIM_func(reconstruction * max_value, data * max_value)
+            PSNR_total[n:n + B] = torch.Tensor(psnr)
+            MS_SSIM_total[n:n + B] = ms_ssim.data
 
             for subidx in range(reconstruction.shape[0]):
                 if B > 1:
@@ -165,9 +167,8 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     df['q_bpp'] = q_bpp_total.cpu().numpy()
     df['LPIPS'] = LPIPS_total.cpu().numpy()
 
-    if args.metrics is True:
-        df['PSNR'] = PSNR_total.cpu().numpy()
-        df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
+    df['PSNR'] = PSNR_total.cpu().numpy()
+    df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
 
     df_path = os.path.join(args.output_dir, 'compression_metrics.h5')
     df.to_hdf(df_path, key='df')
