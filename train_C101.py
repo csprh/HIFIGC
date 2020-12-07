@@ -93,7 +93,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     N = 23
     input_filenames_total = list()
     output_filenames_total = list()
-    q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
+    q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
     MS_SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
     comp_loss_total, classi_loss_total = torch.Tensor(N), torch.Tensor(N)
     max_value = 255.
