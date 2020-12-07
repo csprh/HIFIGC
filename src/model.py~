@@ -226,10 +226,10 @@ class Model(nn.Module):
         output_loss = nn.CrossEntropyLoss()(yhat, y)
 
         _, predicted = torch.max(yhat, 1)
-        total += labels.size(0)
+        total = torch.len(y)
         correct = (predicted == labels).sum().item()
 
-        return output_loss, correct
+        return output_loss, correct/total
 
     def compression_loss(self, intermediates, hyperinfo):
 
