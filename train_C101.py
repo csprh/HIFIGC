@@ -131,7 +131,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
             reconstruction = model.decompress(compressed_output)
             q_bpp = compressed_output.total_bpp
-            q_bpp_attained = compressed_output.attained_bpp
+            q_bpp_attained = compressed_output.latent_bpp
 
             if args.normalize_input_image is True:
                 # [-1., 1.] -> [0., 1.]
