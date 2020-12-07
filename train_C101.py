@@ -107,6 +107,8 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
         for idx1, (dataAll, yAll) in enumerate(tqdm(data_loader), 0):
           dataAll = dataAll.to(device, dtype=torch.float)
           yAll = yAll.to(device)
+          if idx1 > 2:
+              break
           B = dataAll.size(0)
           for idxB in range(B):
             data = dataAll[idxB,:,:,:]
