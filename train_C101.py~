@@ -160,7 +160,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             thisIndx = thisIndx + 1
 
 
-    logger.info(f'BPP: {q_bpp_total.std(dim=1):.3f}')
+    logger.info(f'BPPMean: {q_bpp_total.std(dim=0):.3f}')
     df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
     #df.columns = ['input_filename', 'output_filename']
     #df['bpp_original'] = bpp_total.cpu().numpy()
