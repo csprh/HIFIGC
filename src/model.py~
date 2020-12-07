@@ -225,9 +225,9 @@ class Model(nn.Module):
 
         output_loss = nn.CrossEntropyLoss()(yhat, y)
 
-        _, predicted = torch.max(yhat, 1)
-        total = torch.len(y)
-        correct = (predicted == labels).sum().item()
+        _, predictedy = torch.max(yhat, 1)
+        total = len(y)
+        correct = (predictedy == y).sum().item()
 
         return output_loss, correct/total
 
