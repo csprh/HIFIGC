@@ -155,7 +155,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             output_filenames_total.append(fname)
 
             q_bpp_total[thisIndx] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
-            q_bpp_total_attained[thisIndx] = q_bpp.data if type(q_bpp) == torch.Tensor else q_bpp
+            q_bpp_total_attained[thisIndx] = q_bpp_attained.data if type(q_bpp_attained) == torch.Tensor else q_bpp_attained
             LPIPS_total[thisIndx] = perceptual_loss.data
             comp_loss_total[thisIndx] = compression_loss.data
             if model.use_classiOnly is True:
@@ -163,8 +163,8 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             thisIndx = thisIndx + 1
 
 
+    logger.info(f'BPP: mean={q_bpp_total.mean(dim=0):.3f}, std={q_bpp_total.std(dim=0):.3f}')
     logger.info(f'BPPA: mean={q_bpp_total_attained.mean(dim=0):.3f}, std={q_bpp_total_attained.std(dim=0):.3f}')
-    logger.info(f'BPP: mean={q_bpp_total_attained.mean(dim=0):.3f}, std={q_bpp_total_attained.std(dim=0):.3f}')
     logger.info(f'LPIPS: mean={LPIPS_total.mean(dim=0):.3f}, std={LPIPS_total.std(dim=0):.3f}')
     logger.info(f'PSNR: mean={PSNR_total.mean(dim=0):.3f}, std={PSNR_total.std(dim=0):.3f}')
     logger.info(f'MS_SSIM: mean={MS_SSIM_total.mean(dim=0):.3f}, std={MS_SSIM_total.std(dim=0):.3f}')
