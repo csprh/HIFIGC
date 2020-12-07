@@ -225,7 +225,11 @@ class Model(nn.Module):
 
         output_loss = nn.CrossEntropyLoss()(yhat, y)
 
-        return output_loss
+        _, predicted = torch.max(yhat, 1)
+        total += labels.size(0)
+        correct = (predicted == labels).sum().item()
+
+        return output_loss, correct
 
     def compression_loss(self, intermediates, hyperinfo):
 
@@ -323,7 +327,6 @@ class Model(nn.Module):
         attained_lbpp = 32 * len(compression_output.latents_encoded) / np.prod(spatial_shape)
         attained_bpp = 32 * ((len(compression_output.hyperlatents_encoded) +
             len(compression_output.latents_encoded)) / np.prod(spatial_shape))
-        compression_output.latent_bpp = attained_bpp
         if silent is False:
             self.logger.info('[ESTIMATED]')
             self.logger.info(f'BPP: {compression_output.total_bpp:.3f}')
@@ -335,7 +338,7 @@ class Model(nn.Module):
             self.logger.info(f'HL BPP: {attained_hbpp:.3f}')
             self.logger.info(f'L BPP: {attained_lbpp:.3f}')
 
-        return compression_output
+        return attained_bpp, compression_output
 
 
 
@@ -480,7 +483,7 @@ class Model(nn.Module):
 
         compression_model_loss = self.compression_loss(intermediates, hyperinfo)
 
-        classi_model_loss = self.classi_loss(intermediates)
+        classi_model_loss, classi_acc = self.classi_loss(intermediates)
 
         if self.use_discriminator is True:
             # Only send gradients to generator when training generator via
@@ -492,7 +495,7 @@ class Model(nn.Module):
 
         losses['compression'] = compression_model_loss
         losses['classi'] = classi_model_loss
-
+        losses['classi_acc'] = classi_acc
 
         # Bookkeeping
         if (self.step_counter % self.log_interval == 1):

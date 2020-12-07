@@ -225,7 +225,11 @@ class Model(nn.Module):
 
         output_loss = nn.CrossEntropyLoss()(yhat, y)
 
-        return output_loss
+        _, predicted = torch.max(yhat, 1)
+        total = torch.len(y)
+        correct = (predicted == labels).sum().item()
+
+        return output_loss, correct/total
 
     def compression_loss(self, intermediates, hyperinfo):
 
@@ -479,7 +483,7 @@ class Model(nn.Module):
 
         compression_model_loss = self.compression_loss(intermediates, hyperinfo)
 
-        classi_model_loss = self.classi_loss(intermediates)
+        classi_model_loss, classi_acc = self.classi_loss(intermediates)
 
         if self.use_discriminator is True:
             # Only send gradients to generator when training generator via
@@ -491,7 +495,7 @@ class Model(nn.Module):
 
         losses['compression'] = compression_model_loss
         losses['classi'] = classi_model_loss
-
+        losses['classi_acc'] = classi_acc
 
         # Bookkeeping
         if (self.step_counter % self.log_interval == 1):
