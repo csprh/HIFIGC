@@ -242,7 +242,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
     storage, storage_test = model.storage_train, model.storage_test
 
     classi_opt, amortization_opt, hyperlatent_likelihood_opt = optimizers['classi'], optimizers['amort'], optimizers['hyper']
-    end_of_epoch_metrics(args, model, train_loader, device, logger)
+    #end_of_epoch_metrics(args, model, train_loader, device, logger)
     if model.use_discriminator is True:
         disc_opt = optimizers['disc']
 
