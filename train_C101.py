@@ -164,8 +164,8 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
 
     logger.info(f'BPPA: mean={q_bpp_total_attained.mean(dim=0):.3f}, std={q_bpp_total_attained.std(dim=0):.3f}')
-    logger.info(f'BPP: mean={q_bpp_total.mean(dim=0):.3f}, std={q_bpp_total.std(dim=0):.3f}')
-    logger.info(f'LPIPS: mean={LPIPS.mean(dim=0):.3f}, std={LPIPS.std(dim=0):.3f}')
+    logger.info(f'BPP: mean={q_bpp_total_attained.mean(dim=0):.3f}, std={q_bpp_total_attained.std(dim=0):.3f}')
+    logger.info(f'LPIPS: mean={LPIPS_total.mean(dim=0):.3f}, std={LPIPS_total.std(dim=0):.3f}')
     logger.info(f'PSNR: mean={PSNR_total.mean(dim=0):.3f}, std={PSNR_total.std(dim=0):.3f}')
     logger.info(f'MS_SSIM: mean={MS_SSIM.mean(dim=0):.3f}, std={MS_SSIM.std(dim=0):.3f}')
     logger.info(f'CompLoss: mean={comp_loss_total.mean(dim=0):.3f}, std={comp_loss_total.std(dim=0):.3f}')
