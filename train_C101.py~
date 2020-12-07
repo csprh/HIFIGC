@@ -95,7 +95,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     output_filenames_total = list()
     q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
     MS_SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
-    comp_loss_total, classi_loss_total = torch.Tensor(N), torch.Tensor(N)
+    comp_loss_total, classi_loss_total, classi_acc_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
     max_value = 255.
     MS_SSIM_func = metrics.MS_SSIM(data_range=max_value)
     utils.makedirs(args.output_dir)
@@ -123,6 +123,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
             if model.use_classiOnly is True:
                 classi_loss = losses['classi']
+                classi_acc = losses['classi_acc']
 
             model.set_model_mode(ModelModes.EVALUATION)
             model.training = False
@@ -160,6 +161,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             comp_loss_total[thisIndx] = compression_loss.data
             if model.use_classiOnly is True:
                 classi_loss_total[thisIndx] = classi_loss.data
+                classi_acc_total[thisIndx] = classi_acc.data
             thisIndx = thisIndx + 1
 
 
@@ -170,6 +172,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     logger.info(f'MS_SSIM: mean={MS_SSIM_total.mean(dim=0):.3f}, std={MS_SSIM_total.std(dim=0):.3f}')
     logger.info(f'CompLoss: mean={comp_loss_total.mean(dim=0):.3f}, std={comp_loss_total.std(dim=0):.3f}')
     logger.info(f'ClassiLoss: mean={classi_loss_total.mean(dim=0):.3f}, std={classi_loss_total.std(dim=0):.3f}')
+    logger.info(f'ClassiAcc: mean={classi_acc_total.mean(dim=0):.3f}, std={classi_acc_total.std(dim=0):.3f}')
     #df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
     #df.columns = ['input_filename', 'output_filename']
     #df['bpp_original'] = bpp_total.cpu().numpy()
