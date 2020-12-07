@@ -323,7 +323,6 @@ class Model(nn.Module):
         attained_lbpp = 32 * len(compression_output.latents_encoded) / np.prod(spatial_shape)
         attained_bpp = 32 * ((len(compression_output.hyperlatents_encoded) +
             len(compression_output.latents_encoded)) / np.prod(spatial_shape))
-        compression_output.latent_bpp = attained_bpp
         if silent is False:
             self.logger.info('[ESTIMATED]')
             self.logger.info(f'BPP: {compression_output.total_bpp:.3f}')
@@ -335,7 +334,7 @@ class Model(nn.Module):
             self.logger.info(f'HL BPP: {attained_hbpp:.3f}')
             self.logger.info(f'L BPP: {attained_lbpp:.3f}')
 
-        return compression_output
+        return attained_bpp, compression_output
 
 
 
