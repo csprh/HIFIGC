@@ -92,7 +92,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     n, N = 0, len(data_loader.dataset)
     input_filenames_total = list()
     output_filenames_total = list()
-    bpp_total, q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
+    q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
     MS_SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
     comp_loss_total, classi_loss_total = torch.Tensor(N), torch.Tensor(N)
     max_value = 255.
@@ -107,6 +107,8 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
         for idx1, (dataAll, yAll) in enumerate(tqdm(data_loader), 0):
           dataAll = dataAll.to(device, dtype=torch.float)
           yAll = yAll.to(device)
+          if idx1 > 2:
+              break
           B = dataAll.size(0)
           for idxB in range(B):
             data = dataAll[idxB,:,:,:]
@@ -160,22 +162,28 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             thisIndx = thisIndx + 1
 
 
-    logger.info(f'BPPMean: {q_bpp_total.std(dim=0):.3f}')
-    df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
+    logger.info(f'BPPA: mean={q_bpp_total_attained.mean(dim=0):.3f}, std={q_bpp_total_attained.std(dim=0):.3f}')
+    logger.info(f'BPP: mean={q_bpp_total.mean(dim=0):.3f}, std={q_bpp_total.std(dim=0):.3f}')
+    logger.info(f'LPIPS: mean={LPIPS.mean(dim=0):.3f}, std={LPIPS.std(dim=0):.3f}')
+    logger.info(f'PSNR: mean={PSNR_total.mean(dim=0):.3f}, std={PSNR_total.std(dim=0):.3f}')
+    logger.info(f'MS_SSIM: mean={MS_SSIM.mean(dim=0):.3f}, std={MS_SSIM.std(dim=0):.3f}')
+    logger.info(f'CompLoss: mean={comp_loss_total.mean(dim=0):.3f}, std={comp_loss_total.std(dim=0):.3f}')
+    logger.info(f'ClassiLoss: mean={classi_loss_total.mean(dim=0):.3f}, std={classi_loss_total.std(dim=0):.3f}')
+    #df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
     #df.columns = ['input_filename', 'output_filename']
     #df['bpp_original'] = bpp_total.cpu().numpy()
-    df['q_bpp'] = q_bpp_total.cpu().numpy()
-    df['LPIPS'] = LPIPS_total.cpu().numpy()
+    #df['q_bpp'] = q_bpp_total.cpu().numpy()
+    #df['LPIPS'] = LPIPS_total.cpu().numpy()
 
-    df['PSNR'] = PSNR_total.cpu().numpy()
-    df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
+    #df['PSNR'] = PSNR_total.cpu().numpy()
+    #df['MS_SSIM'] = MS_SSIM_total.cpu().numpy()
 
-    df_path = os.path.join(args.output_dir, 'compression_metrics.h5')
-    df.to_hdf(df_path, key='df')
+    #df_path = os.path.join(args.output_dir, 'compression_metrics.h5')
+    #df.to_hdf(df_path, key='df')
 
-    pprint(df)
+    #pprint(df)
 
-    logger.info('Complete. Reconstructions saved to {}. Output statistics saved to {}'.format(args.output_dir, df_path))
+    #logger.info('Complete. Reconstructions saved to {}. Output statistics saved to {}'.format(args.output_dir, df_path))
     delta_t = time.time() - start_time
     logger.info('Time elapsed: {:.3f} s'.format(delta_t))
     logger.info('Rate: {:.3f} Images / s:'.format(float(N) / delta_t))
