@@ -90,7 +90,6 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     logger.info('All tables built.')
 
     n, N = 0, len(data_loader.dataset)
-    N = 24
     input_filenames_total = list()
     output_filenames_total = list()
     q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
