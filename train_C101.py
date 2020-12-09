@@ -243,6 +243,9 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
     test_writer = SummaryWriter(os.path.join(args.tensorboard_runs, 'test'))
     storage, storage_test = model.storage_train, model.storage_test
 
+    Ntrain = len(train_loader.dataset)
+    classi_loss_total_train, classi_acc_total_train = torch.Tensor(Ntrain), torch.Tensor(Ntrain)
+
     classi_opt, amortization_opt, hyperlatent_likelihood_opt = optimizers['classi'], optimizers['amort'], optimizers['hyper']
     #end_of_epoch_metrics(args, model, train_loader, device, logger)
     if model.use_discriminator is True:
@@ -268,7 +271,10 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                 if model.use_classiOnly is True:
                     losses = model(data, y, train_generator=False)
                     classi_loss = losses['classi']
+                    classi_acc  = losses['classi_acc']
                     optimize_loss(classi_loss, classi_opt)
+                    classi_loss_total_train[idx] = classi_loss.data
+                    classi_acc_total_train[idx] = classi_acc.data
                 else:
                   if model.use_discriminator is True:
                     # Train D for D_steps, then G, using distinct batches
@@ -343,10 +349,14 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         mean_epoch_loss = np.mean(epoch_loss)
         mean_epoch_test_loss = np.mean(epoch_test_loss)
 
-        end_of_epoch_metrics(args, model, train_loader, device, logger)
-        end_of_epoch_metrics(args, model, test_loader, device, logger)
         logger.info('===>> Epoch {} | Mean train loss: {:.3f} | Mean test loss: {:.3f}'.format(epoch,
             mean_epoch_loss, mean_epoch_test_loss))
+        logger.info(f'ClassiLossTrain: mean={classi_loss_total_train.mean(dim=0):.3f}, std={classi_loss_total_train.std(dim=0):.3f}')
+        logger.info(f'ClassiAccTrain: mean={classi_acc_total_train.mean(dim=0):.3f}, std={classi_acc_total_train.std(dim=0):.3f}')
+
+        #end_of_epoch_metrics(args, model, train_loader, device, logger)
+        end_of_epoch_metrics(args, model, test_loader, device, logger)
+
 
         if model.step_counter > args.n_steps:
             break
