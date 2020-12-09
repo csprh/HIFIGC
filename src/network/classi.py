@@ -11,10 +11,10 @@ class Classi(nn.Module):
         #B, 220, 16,16 >  #B, 8, 16,16
 
         self.b1 = nn.BatchNorm1d(8)
-        self.d1 = nn.Dropout(0.7)
+        self.d1 = nn.Dropout(0.5)
         self.lr1 = nn.LeakyReLU(0.1)
-        self.l1 = nn.Linear(56320,8) #8*12*12
-        self.l2 = nn.Linear(8,C) #8*12*12
+        self.l1 = nn.Linear(56320,16) #8*12*12
+        self.l2 = nn.Linear(16,C) #8*12*12
 
 
     def forward(self, x):
