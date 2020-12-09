@@ -21,7 +21,7 @@ class Classi(nn.Module):
         x = x.view(x.shape[0], -1)
         x = self.l1(x)
         x = self.lr1(x)
-        x = self.b1(x)
+        #x = self.b1(x)
         x = self.d1(x)
 
 
