@@ -27,7 +27,7 @@ class Classi(nn.Module):
 
 
         x = self.l2(x)
-        result = F.softmax(x)
+        #x = F.softmax(x)
         return x
 
 class ClassiOld(nn.Module):
