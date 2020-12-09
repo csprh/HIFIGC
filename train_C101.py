@@ -243,7 +243,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
     test_writer = SummaryWriter(os.path.join(args.tensorboard_runs, 'test'))
     storage, storage_test = model.storage_train, model.storage_test
 
-    Ntrain = len(train_loader.dataset)
+    Ntrain = len(train_loader)
     classi_loss_total_train, classi_acc_total_train = torch.Tensor(Ntrain), torch.Tensor(Ntrain)
 
     classi_opt, amortization_opt, hyperlatent_likelihood_opt = optimizers['classi'], optimizers['amort'], optimizers['hyper']
