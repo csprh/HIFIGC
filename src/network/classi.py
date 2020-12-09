@@ -17,8 +17,9 @@ class Classi(nn.Module):
 
     def forward(self, x):
         x = F.relu(self.c1(x))
-        x = self.b1(x)
-        x = F.dropout(x, training=self.training)
+        #x = self.b1(x)
+        x = self.d1(x)
+        #x = F.dropout(x, training=self.training)
         x = x.view(x.shape[0], -1)
 
         x = self.l1(x)
