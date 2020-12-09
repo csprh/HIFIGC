@@ -9,12 +9,11 @@ class Classi(nn.Module):
 
         super(Classi, self).__init__()
         #B, 220, 16,16 >  #B, 8, 16,16
-        self.c1 = nn.Conv2d(220, 8, kernel_size=(5,5), stride=1)
-        self.b1 = nn.BatchNorm(8)
+
+        self.b1 = nn.BatchNorm1D(8)
         self.d1 = nn.Dropout(0.7)
         self.lr1 = nn.LeakyReLU(0.1)
         self.l1 = nn.Linear(56320,8) #8*12*12
-
         self.l2 = nn.Linear(8,C) #8*12*12
 
 
