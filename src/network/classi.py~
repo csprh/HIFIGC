@@ -62,7 +62,7 @@ class Classi(nn.Module):
         self.c1 = nn.Conv2d(220, 8, kernel_size=(5,5), stride=1)
         self.lr1 = nn.LeakyReLU(0.1)
         self.b1 = nn.BatchNorm2d(8)
-        self.d1 = nn.Dropout2d(0.7)
+        self.d1 = nn.Dropout2d(0.5)
         self.l1 = nn.Linear(1152,C) #8*12*12
 
     def forward(self, x):
