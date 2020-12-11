@@ -229,7 +229,7 @@ class Model(nn.Module):
         total = len(y)
         correct = (predictedy == y).sum().item()
 
-        return output_loss, torch.from_numpy(correct/total)
+        return output_loss, torch.from_numpy(np.array(correct/total))
 
     def compression_loss(self, intermediates, hyperinfo):
 

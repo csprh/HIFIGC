@@ -6,7 +6,7 @@ import numpy as np
 
 class Discriminator(nn.Module):
     def __init__(self, image_dims, context_dims, C, spectral_norm=True):
-        """
+        """ 
         Convolutional patchGAN discriminator used in [1].
         Accepts as input generator output G(z) or x ~ p*(x) where
         p*(x) is the true data distribution.
@@ -19,11 +19,11 @@ class Discriminator(nn.Module):
                         C = 220 used in [1], C = C_in' if encoder output used
                         as context.
 
-        [1] Mentzer et. al., "High-Fidelity Generative Image Compression",
+        [1] Mentzer et. al., "High-Fidelity Generative Image Compression", 
             arXiv:2006.09965 (2020).
         """
         super(Discriminator, self).__init__()
-
+        
         self.image_dims = image_dims
         self.context_dims = context_dims
         im_channels = self.image_dims[0]
@@ -42,7 +42,7 @@ class Discriminator(nn.Module):
         # TODO: calculate padding properly
         cnn_kwargs = dict(stride=2, padding=1, padding_mode='reflect')
         self.activation = nn.LeakyReLU(negative_slope=0.2)
-
+        
         if spectral_norm is True:
             norm = nn.utils.spectral_norm
         else:
@@ -79,10 +79,10 @@ class Discriminator(nn.Module):
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x))
         x = self.activation(self.conv4(x))
-
+        
         out_logits = self.conv_out(x).view(-1,1)
         out = torch.sigmoid(out_logits)
-
+        
         return out, out_logits
 
 if __name__ == "__main__":
