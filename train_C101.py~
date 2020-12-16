@@ -474,9 +474,9 @@ if __name__ == '__main__':
     classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
     optimizers['classi'] = classi_opt
 
-    for params in model.Encoder.parameters()
+    for params in model.Encoder.parameters():
        param.requires_grad = False
-    for params in model.Generator.parameters()
+    for params in model.Generator.parameters():
        param.requires_grad = False
 
 

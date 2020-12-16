@@ -475,9 +475,9 @@ if __name__ == '__main__':
     optimizers['classi'] = classi_opt
 
     for params in model.Encoder.parameters():
-       param.requires_grad = False
+       params.requires_grad = False
     for params in model.Generator.parameters():
-       param.requires_grad = False
+       params.requires_grad = False
 
 
     n_gpus = torch.cuda.device_count()
