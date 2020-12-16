@@ -472,8 +472,13 @@ if __name__ == '__main__':
 
     classi_parameters = model.Classi.parameters()
     classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
-
     optimizers['classi'] = classi_opt
+
+    for params in model.Encoder.parameters()
+       param.requires_grad = False
+    for params in model.Generator.parameters()
+       param.requires_grad = False
+
 
     n_gpus = torch.cuda.device_count()
     if n_gpus > 1 and args.multigpu is True:

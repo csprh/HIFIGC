@@ -399,7 +399,7 @@ if __name__ == '__main__':
     optim_args = parser.add_argument_group("Optimization-related options")
     optim_args.add_argument('-steps', '--n_steps', type=float, default=1e6,
         help="Number of gradient steps. Optimization stops at the earlier of n_steps/n_epochs.")
-    optim_args.add_argument('-epochs', '--n_epochs', type=int, default=10,
+    optim_args.add_argument('-epochs', '--n_epochs', type=int, default=30,
         help="Number of passes over training dataset. Optimization stops at the earlier of n_steps/n_epochs.")
     optim_args.add_argument("-lr", "--learning_rate", type=float, default=1e-4, help="Optimizer learning rate.")
     optim_args.add_argument("-wd", "--weight_decay", type=float, default=1e-6, help="Coefficient of L2 regularization.")
