@@ -264,6 +264,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
 
         model.train()
         test_index = 0
+        test_acc_total= 0
         for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
             if idx == 10:
