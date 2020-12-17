@@ -387,7 +387,7 @@ if __name__ == '__main__':
     general.add_argument("-log_intv", "--log_interval", type=int, default=2500, help="Number of steps between logs.")
     general.add_argument("-save_intv", "--save_interval", type=int, default=50000, help="Number of steps between checkpoints.")
     general.add_argument("-multigpu", "--multigpu", help="Toggle data parallel capability using torch DataParallel", action="store_true")
-    general.add_argument("-norm", "--normalize_input_image", help="Normalize input images to [-1,1]", action="store_true")
+    general.add_argument("-norm", "--normalize_input_image", default = True, help="Normalize input images to [-1,1]", action="store_true")
     general.add_argument('-bs', '--batch_size', type=int, default=8, help='input batch size for training')
     general.add_argument('--save', type=str, default='experiments', help='Parent directory for stored information (checkpoints, logs, etc.)')
     general.add_argument("-lt", "--likelihood_type", choices=('gaussian', 'logistic'), default='gaussian', help="Likelihood model for latents.")
@@ -475,9 +475,9 @@ if __name__ == '__main__':
     optimizers['classi'] = classi_opt
 
     for params in model.Encoder.parameters():
-       param.requires_grad = False
+       params.requires_grad = False
     for params in model.Generator.parameters():
-       param.requires_grad = False
+       params.requires_grad = False
 
 
     n_gpus = torch.cuda.device_count()
@@ -507,6 +507,14 @@ if __name__ == '__main__':
     #transform = transforms.Compose([transforms.Grayscale(3), transforms.Resize((W, H)),  transforms.ToTensor()])
     transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
 
+    args.normalize_input_image = True
+    #transform = transforms.Compose(
+    #[transforms.ToPILImage(),
+    # transforms.Resize((W, H)),
+     #transforms.ToTensor(),
+     #transforms.Normalize(mean=[0.485, 0.456, 0.406],
+     #                     std=[0.229, 0.224, 0.225])])
+
     wholeset = torchvision.datasets.Caltech101(root=C101Root,
                                         download=False, transform=transform)
     wholeset.image_dims = (3, W, H)
@@ -514,11 +522,11 @@ if __name__ == '__main__':
     trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
     #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2,normalize=args.normalize_input_image)
 
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2,normalize=args.normalize_input_image)
 
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2,normalize=args.normalize_input_image)
     #test_loader = datasets.get_dataloaders(args.dataset,
     #                            root=args.dataset_path,
     #                            batch_size=args.batch_size,
