@@ -214,15 +214,17 @@ def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_
         compression_loss = losses['compression']
 
         classi_loss = losses['classi']
+        classi_acc  = losses['classi_acc']
         epoch_test_loss.append(compression_loss.item())
         mean_test_loss = np.mean(epoch_test_loss)
+        mean_test_acc = np.mean(classi_acc)
 
         best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
                                      best_test_loss, start_time, epoch_start_time,
                                      batch_size=data.shape[0],avg_bpp=0 ,header='[TEST]',
                                      logger=logger, writer=test_writer)
 
-    return best_test_loss, epoch_test_loss
+    return best_test_loss, epoch_test_loss, mean_test_acc
 
 def train_test_val_dataset(dataset, test_split=0.1, val_split=0.1, random_state=1):
     train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split, random_state=random_state)
@@ -261,10 +263,11 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
             ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
 
         model.train()
-
+        test_index = 0
         for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
-
+            if idx == 10:
+                break
             data = data.to(device, dtype=torch.float)
             y = y.to(device)
             try:
@@ -318,12 +321,18 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                                 avg_bpp=bpp, logger=logger, writer=train_writer)
                 try:
                     test_data, ytest = test_loader_iter.next()
+
                 except StopIteration:
                     test_loader_iter = iter(test_loader)
                     test_data, ytest = test_loader_iter.next()
+
                 ytest = ytest.to(device)
-                best_test_loss, epoch_test_loss = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
+                best_test_loss, epoch_test_loss, mean_test_acc = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
                      best_test_loss, start_time, epoch_start_time, logger, train_writer, test_writer)
+
+                test_acc_total = test_acc_total  + mean_test_acc
+                test_index = test_index + 1
+                mean_test_acc_total = test_acc_total/test_index
 
                 with open(os.path.join(args.storage_save, 'storage_{}_tmp.pkl'.format(args.name)), 'wb') as handle:
                     pickle.dump(storage, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -349,8 +358,8 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         mean_epoch_loss = np.mean(epoch_loss)
         mean_epoch_test_loss = np.mean(epoch_test_loss)
 
-        logger.info('===>> Epoch {} | Mean train loss: {:.3f} | Mean test loss: {:.3f}'.format(epoch,
-            mean_epoch_loss, mean_epoch_test_loss))
+        logger.info('===>> Epoch {} | Mean train loss: {:.3f} | Mean test loss: {:.3f}  | Mean test classi acc: {:.3f}'.format(epoch,
+            mean_epoch_loss, mean_epoch_test_loss, mean_test_acc_total))
         logger.info(f'ClassiLossTrain: mean={classi_loss_total_train.mean(dim=0):.3f}, std={classi_loss_total_train.std(dim=0):.3f}')
         logger.info(f'ClassiAccTrain: mean={classi_acc_total_train.mean(dim=0):.3f}, std={classi_acc_total_train.std(dim=0):.3f}')
 
