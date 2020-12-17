@@ -268,8 +268,8 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         mean_test_acc_total = 0
         for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
-            if idx == 10:
-                break
+            #if idx == 10:
+            #    break
             data = data.to(device, dtype=torch.float)
             y = y.to(device)
             try:

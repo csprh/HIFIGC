@@ -280,6 +280,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     optimize_loss(classi_loss, classi_opt)
                     classi_loss_total_train[idx] = classi_loss.data
                     classi_acc_total_train[idx] = classi_acc.data
+                    model.step_counter += 1
                 else:
                   if model.use_discriminator is True:
                     # Train D for D_steps, then G, using distinct batches
