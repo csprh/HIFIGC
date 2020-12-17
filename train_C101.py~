@@ -278,7 +278,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     classi_loss = losses['classi']
                     classi_acc  = losses['classi_acc']
                     compression_loss = losses['compression']
-                    disc_loss = losses['disc']
+
                     optimize_loss(classi_loss, classi_opt)
                     classi_loss_total_train[idx] = classi_loss.data
                     classi_acc_total_train[idx] = classi_acc.data
