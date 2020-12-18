@@ -217,7 +217,7 @@ def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_
         classi_acc  = losses['classi_acc']
         epoch_test_loss.append(compression_loss.item())
         mean_test_loss = np.mean(epoch_test_loss)
-        mean_test_acc = np.mean(classi_acc)
+        mean_test_acc = np.mean(classi_acc.item())
 
         best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
                                      best_test_loss, start_time, epoch_start_time,

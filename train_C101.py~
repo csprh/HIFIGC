@@ -321,9 +321,9 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                 epoch_loss.append(compression_loss.item())
                 mean_epoch_loss = np.mean(epoch_loss)
 
-                best_loss = utils.log(model, storage, epoch, idx, mean_epoch_loss, compression_loss.item(),
-                                best_loss, start_time, epoch_start_time, batch_size=data.shape[0],
-                                avg_bpp=bpp, logger=logger, writer=train_writer)
+                #best_loss = utils.log(model, storage, epoch, idx, mean_epoch_loss, compression_loss.item(),
+                #                best_loss, start_time, epoch_start_time, batch_size=data.shape[0],
+                #                avg_bpp=bpp, logger=logger, writer=train_writer)
                 try:
                     test_data, ytest = test_loader_iter.next()
 
