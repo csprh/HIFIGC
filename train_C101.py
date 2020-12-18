@@ -202,14 +202,14 @@ def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_
     with torch.no_grad():
         data = data.to(device, dtype=torch.float)
 
-        losses, intermediates = model(data, y, return_intermediates=True, writeout=False)
-        utils.save_images(train_writer, model.step_counter, intermediates.input_image, intermediates.reconstruction,
-            fname=os.path.join(args.figures_save, 'recon_epoch{}_idx{}_TRAIN_{:%Y_%m_%d_%H:%M}.jpg'.format(epoch, idx, datetime.datetime.now())))
+        #losses, intermediates = model(data, y, return_intermediates=True, writeout=False)
+        #utils.save_images(train_writer, model.step_counter, intermediates.input_image, intermediates.reconstruction,
+        #    fname=os.path.join(args.figures_save, 'recon_epoch{}_idx{}_TRAIN_{:%Y_%m_%d_%H:%M}.jpg'.format(epoch, idx, datetime.datetime.now())))
 
         test_data = test_data.to(device, dtype=torch.float)
         losses, intermediates = model(test_data, ytest, return_intermediates=True, writeout=True)
-        utils.save_images(test_writer, model.step_counter, intermediates.input_image, intermediates.reconstruction,
-            fname=os.path.join(args.figures_save, 'recon_epoch{}_idx{}_TEST_{:%Y_%m_%d_%H:%M}.jpg'.format(epoch, idx, datetime.datetime.now())))
+        #utils.save_images(test_writer, model.step_counter, intermediates.input_image, intermediates.reconstruction,
+        #    fname=os.path.join(args.figures_save, 'recon_epoch{}_idx{}_TEST_{:%Y_%m_%d_%H:%M}.jpg'.format(epoch, idx, datetime.datetime.now())))
 
         compression_loss = losses['compression']
 
@@ -219,10 +219,10 @@ def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_
         mean_test_loss = np.mean(epoch_test_loss)
         mean_test_acc = np.mean(classi_acc.item())
 
-        best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
-                                     best_test_loss, start_time, epoch_start_time,
-                                     batch_size=data.shape[0],avg_bpp=0 ,header='[TEST]',
-                                     logger=logger, writer=test_writer)
+        #best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
+        #                             best_test_loss, start_time, epoch_start_time,
+        #                             batch_size=data.shape[0],avg_bpp=0 ,header='[TEST]',
+        #                             logger=logger, writer=test_writer)
 
     return best_test_loss, epoch_test_loss, mean_test_acc
 
@@ -317,7 +317,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                 else:
                     return model, None
 
-            if model.step_counter % args.log_interval == 1:
+            if model.step_counter % args.log_interval == 0:
                 epoch_loss.append(compression_loss.item())
                 mean_epoch_loss = np.mean(epoch_loss)
 
