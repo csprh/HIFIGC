@@ -77,6 +77,22 @@ def make_deterministic(seed=42):
 
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
+    n, N = 0, len(data_loader.dataset)
+    input_filenames_total = list()
+    output_filenames_total = list()
+    q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
+    MS_SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
+    comp_loss_total, classi_loss_total, classi_acc_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
+    with torch.no_grad():
+        thisIndx =  0
+        for idx1, (dataAll, yAll) in enumerate(tqdm(data_loader), 0):
+          dataAll = dataAll.to(device, dtype=torch.float)
+          yAll = yAll.to(device)
+          losses, intermediates = model(dataAll, yAll, return_intermediates=True, writeout=True)
+          classi_acc = losses['classi_acc']
+          classi_acc_total[thisIndx] = classi_acc.data
+          thisIndx = thisIndx + 1
+
     old_mode = model.model_mode
     model.set_model_mode(ModelModes.EVALUATION)
     model.training = False
@@ -89,12 +105,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     model.Hyperprior.hyperprior_entropy_model.build_tables()
     logger.info('All tables built.')
 
-    n, N = 0, len(data_loader.dataset)
-    input_filenames_total = list()
-    output_filenames_total = list()
-    q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
-    MS_SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
-    comp_loss_total, classi_loss_total, classi_acc_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
+
     max_value = 255.
     MS_SSIM_func = metrics.MS_SSIM(data_range=max_value)
     utils.makedirs(args.output_dir)
@@ -102,15 +113,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     logger.info('Starting compression...')
     start_time = time.time()
 
-    with torch.no_grad():
-        thisIndx =  0
-        for idx1, (dataAll, yAll) in enumerate(tqdm(data_loader), 0):
-          dataAll = dataAll.to(device, dtype=torch.float)
-          yAll = yAll.to(device)
-          losses, intermediates = model(dataAll, yAll, return_intermediates=True, writeout=True)
-          classi_acc = losses['classi_acc']
-          classi_acc_total[thisIndx] = classi_acc.data
-          thisIndx = thisIndx + 1
+
 
     with torch.no_grad():
         thisIndx =  0
