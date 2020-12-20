@@ -166,8 +166,8 @@ class Model(nn.Module):
         total_nbpp = hyperinfo.total_nbpp
         total_qbpp = hyperinfo.total_qbpp
 
-        #yhat_class = self.Classi(latents_quantized)
-        yhat_class = self.Classi(y)
+        yhat_class = self.Classi(latents_quantized)
+        #yhat_class = self.Classi(y)
 
         # Use quantized latents as input to G
         reconstruction = self.Generator(latents_quantized)
