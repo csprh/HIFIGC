@@ -77,6 +77,8 @@ def make_deterministic(seed=42):
 
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
+    model.eval()
+    classi_acc_total = []
     n, N = 0, len(data_loader.dataset)
     input_filenames_total = list()
     output_filenames_total = list()
@@ -90,8 +92,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
           yAll = yAll.to(device)
           losses, intermediates = model(dataAll, yAll, return_intermediates=True, writeout=True)
           classi_acc = losses['classi_acc']
-          classi_acc_total[thisIndx] = classi_acc.data
-          thisIndx = thisIndx + 1
+          classi_acc_total.append(classi_acc.item())
 
     old_mode = model.model_mode
     model.set_model_mode(ModelModes.EVALUATION)
