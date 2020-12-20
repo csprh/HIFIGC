@@ -185,7 +185,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     logger.info(f'MS_SSIM: mean={MS_SSIM_total.mean(dim=0):.3f}, std={MS_SSIM_total.std(dim=0):.3f}')
     logger.info(f'CompLoss: mean={comp_loss_total.mean(dim=0):.3f}, std={comp_loss_total.std(dim=0):.3f}')
     logger.info(f'ClassiLoss: mean={classi_loss_total.mean(dim=0):.3f}, std={classi_loss_total.std(dim=0):.3f}')
-    logger.info(f'ClassiAcc: mean={np.mean(classi_acc_total):.3f}, std={classi_acc_total.std(dim=0):.3f}')
+    logger.info(f'ClassiAcc: mean={np.mean(classi_acc_total):.3f}')
     #df = pd.DataFrame([input_filenames_total, output_filenames_total]).T
     #df.columns = ['input_filename', 'output_filename']
     #df['bpp_original'] = bpp_total.cpu().numpy()
