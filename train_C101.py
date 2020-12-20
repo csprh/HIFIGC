@@ -107,6 +107,16 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
         for idx1, (dataAll, yAll) in enumerate(tqdm(data_loader), 0):
           dataAll = dataAll.to(device, dtype=torch.float)
           yAll = yAll.to(device)
+          losses, intermediates = model(dataAll, yAll, return_intermediates=True, writeout=True)
+          classi_acc = losses['classi_acc']
+          classi_acc_total[thisIndx] = classi_acc.data
+          thisIndx = thisIndx + 1
+
+    with torch.no_grad():
+        thisIndx =  0
+        for idx1, (dataAll, yAll) in enumerate(tqdm(data_loader), 0):
+          dataAll = dataAll.to(device, dtype=torch.float)
+          yAll = yAll.to(device)
           #if idx1 > 2:
           #    break
           B = dataAll.size(0)
@@ -160,7 +170,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             comp_loss_total[thisIndx] = compression_loss.data
             if model.use_classiOnly is True:
                 classi_loss_total[thisIndx] = classi_loss.data
-                classi_acc_total[thisIndx] = classi_acc.data
+                #classi_acc_total[thisIndx] = classi_acc.data
             thisIndx = thisIndx + 1
 
 
