@@ -84,8 +84,9 @@ class Classi(nn.Module):
         x = self.l4(x)
         x = self.l5(x)
         x = self.l6(x)
-        x = self.l7(x)
         x = x.view(x.shape[0], -1)
+        x = self.l7(x)
+
 
         #result = F.softmax(x)
         return x
