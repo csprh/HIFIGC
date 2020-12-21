@@ -130,7 +130,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
             y = yAll[idxB]
             y = y.unsqueeze(0)
             model.set_model_mode(old_mode)
-            model.training = True
+            model.training = False
             losses = model(data, y, train_generator=False)
             compression_loss = losses['compression']
 
@@ -139,7 +139,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
                 classi_acc = losses['classi_acc']
 
             model.set_model_mode(ModelModes.EVALUATION)
-            model.training = True
+            model.training = False
             # Perform entropy coding
             q_bpp_attained, compressed_output = model.compress(data, silent = True)
 
