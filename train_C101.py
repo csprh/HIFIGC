@@ -77,7 +77,7 @@ def make_deterministic(seed=42):
 
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
-    model.eval()
+    #model.eval()
     classi_acc_total = []
     n, N = 0, len(data_loader.dataset)
     input_filenames_total = list()
