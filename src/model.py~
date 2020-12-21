@@ -147,8 +147,7 @@ class Model(nn.Module):
         """
         image_dims = tuple(x.size()[1:])  # (C,H,W)
 
-        #if self.model_mode == ModelModes.EVALUATION and (self.training is False):
-        if 1:
+        if self.model_mode == ModelModes.EVALUATION and (self.training is False):
             n_encoder_downsamples = self.Encoder.n_downsampling_layers
             factor = 2 ** n_encoder_downsamples
             x = utils.pad_factor(x, x.size()[2:], factor)
@@ -156,8 +155,7 @@ class Model(nn.Module):
         # Encoder forward pass
         y = self.Encoder(x)
 
-        #if self.model_mode == ModelModes.EVALUATION and (self.training is False):
-        if 1:
+        if self.model_mode == ModelModes.EVALUATION and (self.training is False):
             n_hyperencoder_downsamples = self.Hyperprior.analysis_net.n_downsampling_layers
             factor = 2 ** n_hyperencoder_downsamples
             y = utils.pad_factor(y, y.size()[2:], factor)
@@ -178,8 +176,7 @@ class Model(nn.Module):
             reconstruction = torch.tanh(reconstruction)
 
         # Undo padding
-        #if self.model_mode == ModelModes.EVALUATION and (self.training is False):
-        if 1:
+        if self.model_mode == ModelModes.EVALUATION and (self.training is False):
             reconstruction = reconstruction[:, :, :image_dims[1], :image_dims[2]]
 
         intermediates = Intermediates(x, yhat_class, yclass, reconstruction, latents_quantized,
