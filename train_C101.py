@@ -77,8 +77,8 @@ def make_deterministic(seed=42):
 
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
-    #model.eval()
-    old_mode = model.model_modes
+    model.eval()
+    old_mode = model.model_mode
     model.set_model_mode(ModelModes.EVALUATION)
     model.training = False
     classi_acc_total = []
