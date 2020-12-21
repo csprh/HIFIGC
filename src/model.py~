@@ -305,8 +305,8 @@ class Model(nn.Module):
         * Encode latents via entropy model derived from (mean, scale) hyperprior output.
         """
 
-        #assert self.model_mode == ModelModes.EVALUATION and (self.training is False), (
-        #    f'Set model mode to {ModelModes.EVALUATION} for compression.')
+        assert self.model_mode == ModelModes.EVALUATION and (self.training is False), (
+            f'Set model mode to {ModelModes.EVALUATION} for compression.')
 
         spatial_shape = tuple(x.size()[2:])
 
@@ -355,8 +355,8 @@ class Model(nn.Module):
         * Encode latents via entropy model derived from (mean, scale) hyperprior output.
         """
 
-        #assert self.model_mode == ModelModes.EVALUATION and (self.training is False), (
-        #    f'Set model mode to {ModelModes.EVALUATION} for compression.')
+        assert self.model_mode == ModelModes.EVALUATION and (self.training is False), (
+            f'Set model mode to {ModelModes.EVALUATION} for compression.')
 
         spatial_shape = tuple(x.size()[2:])
 
@@ -403,8 +403,8 @@ class Model(nn.Module):
           y* -> Generator() -> x*.
         """
 
-        #assert self.model_mode == ModelModes.EVALUATION and (self.training is False), (
-        #    f'Set model mode to {ModelModes.EVALUATION} for decompression.')
+        assert self.model_mode == ModelModes.EVALUATION and (self.training is False), (
+            f'Set model mode to {ModelModes.EVALUATION} for decompression.')
 
         latents_decoded = self.Hyperprior.decompress_forward(compression_output, device=utils.get_device())
 
