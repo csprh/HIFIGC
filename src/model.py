@@ -157,7 +157,7 @@ class Model(nn.Module):
         y = self.Encoder(x)
 
         if 1:
-            if self.model_mode == ModelModes.EVALUATION and (self.training is False):
+            #if self.model_mode == ModelModes.EVALUATION and (self.training is False):
             n_hyperencoder_downsamples = self.Hyperprior.analysis_net.n_downsampling_layers
             factor = 2 ** n_hyperencoder_downsamples
             y = utils.pad_factor(y, y.size()[2:], factor)
