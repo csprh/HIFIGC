@@ -78,6 +78,9 @@ def make_deterministic(seed=42):
 def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
     #model.eval()
+    old_mode = model.model_modes
+    model.set_model_mode(ModelModes.EVALUATION)
+    model.training = False
     classi_acc_total = []
     n, N = 0, len(data_loader.dataset)
     input_filenames_total = list()
@@ -94,9 +97,8 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
           classi_acc = losses['classi_acc']
           classi_acc_total.append(classi_acc.item())
 
-    old_mode = model.model_mode
-    model.set_model_mode(ModelModes.EVALUATION)
-    model.training = False
+
+
     # Reproducibility
     make_deterministic()
     perceptual_loss_fn = ps.PerceptualLoss(model='net-lin', net='alex', use_gpu=torch.cuda.is_available())
