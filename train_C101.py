@@ -503,7 +503,7 @@ if __name__ == '__main__':
 
     classi_parameters = model.Classi.parameters()
     #classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-4)
-    classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, lr_decay=1e-4, weight_decay=1e-6)
+    classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-6)
     #classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
     optimizers['classi'] = classi_opt
 
