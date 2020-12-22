@@ -386,7 +386,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         logger.info(f'ClassiAccTrain: mean={classi_acc_total_train.mean(dim=0):.3f}, std={classi_acc_total_train.std(dim=0):.3f}')
 
         #end_of_epoch_metrics(args, model, train_loader, device, logger)
-        end_of_epoch_metrics(args, model, test_loader, device, logger)
+        #end_of_epoch_metrics(args, model, test_loader, device, logger)
 
 
         if model.step_counter > args.n_steps:
