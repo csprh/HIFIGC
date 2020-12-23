@@ -39,7 +39,7 @@ class Classi(nn.Module):
         self.lr1 = nn.LeakyReLU(0.1)
         self.b1 = nn.BatchNorm2d(8)
         self.d1 = nn.Dropout2d(0.6)
-        self.l1 = nn.Linear(1152,C) #8*12*12
+        self.l1 = nn.Linear(1568,C) #8*12*12
 
     def forward(self, x):
         #x = F.relu(self.c1(x))
