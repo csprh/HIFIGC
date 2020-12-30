@@ -199,11 +199,11 @@ class thales(BaseDataset):
         else:
             raise ValueError('Unknown mode!')
 
-        data_dir_class0 = os.path.join(data_dir, self.files["0"])
+        data_dir_class0 = os.path.join(data_dir, "0")
         self.imgs = glob.glob(os.path.join(data_dir_class0, '*.png'))
         self.labels = np.zeros(len(self.imgs))
 
-        data_dir_class1 = os.path.join(data_dir, self.files["1"])
+        data_dir_class1 = os.path.join(data_dir, "1")
         tmp = glob.glob(os.path.join(data_dir_class1, '*.png'))
         self.labels += np.ones(len(tmp))
         self.imgs += tmp

@@ -193,9 +193,9 @@ class thales(BaseDataset):
         if mode == 'train':
             data_dir = self.train_data
         elif mode == 'validation':
-            data_dir = self.val_dat
+            data_dir = self.val_data
         elif mode == 'test':
-            data_dir = self.test_dat
+            data_dir = self.test_data
         else:
             raise ValueError('Unknown mode!')
 
