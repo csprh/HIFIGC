@@ -201,11 +201,11 @@ class thales(BaseDataset):
 
         data_dir_class0 = os.path.join(data_dir, "0")
         self.imgs = glob.glob(os.path.join(data_dir_class0, '*.png'))
-        self.labels = np.zeros(len(self.imgs))
+
 
         data_dir_class1 = os.path.join(data_dir, "1")
         tmp = glob.glob(os.path.join(data_dir_class1, '*.png'))
-        self.labels += np.ones(len(tmp))
+        self.labels = np.concatenate((np.zeros(len(self.imgs)), np.ones(len(tmp))), axis=0)
         self.imgs += tmp
 
         self.crop_size = crop_size
