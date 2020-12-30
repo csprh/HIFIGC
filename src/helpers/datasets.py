@@ -182,32 +182,28 @@ class Evaluation(BaseDataset):
 class thales(BaseDataset):
     """thales
 
-    Parameters
-    ----------
-    root : string
-        Root directory of dataset.
-
-    References
-    ----------
-    [1] https://storage.googleapis.com/openimages/web/factsfigures.html
 
     """
     files = {"train": "train", "test": "test", "val": "validation"}
 
-    def __init__(self, root=os.path.join(DIR, 'data/openimages'), mode='train', crop_size=256,
+    def __init__(self, root=os.path.join(DIR, 'data/thales'), mode='train', crop_size=256,
         normalize=False, **kwargs):
         super().__init__(root, [transforms.ToTensor()], **kwargs)
 
         if mode == 'train':
             data_dir = self.train_data
         elif mode == 'validation':
-            data_dir = self.val_data
+            data_dir = self.val_dat
+        elif mode == 'test':
+            data_dir = self.test_dat
         else:
             raise ValueError('Unknown mode!')
 
-        #
+        data_dir_class0 = os.path.join(data_dir, self.files["0"])
         self.imgs = glob.glob(os.path.join(data_dir_class0, '*.png'))
         self.labels = np.zeros(len(self.imgs))
+
+        data_dir_class1 = os.path.join(data_dir, self.files["1"])
         tmp = glob.glob(os.path.join(data_dir_class1, '*.png'))
         self.labels += np.ones(len(tmp))
         self.imgs += tmp
@@ -262,8 +258,9 @@ class thales(BaseDataset):
         return transformed, y
 
 
+
 class OpenImages(BaseDataset):
-    """thales dataset from [1].
+    """OpenImages dataset from [1].
 
     Parameters
     ----------
@@ -277,7 +274,7 @@ class OpenImages(BaseDataset):
     """
     files = {"train": "train", "test": "test", "val": "validation"}
 
-    def __init__(self, root=os.path.join(DIR, 'data/thales'), mode='train', crop_size=256,
+    def __init__(self, root=os.path.join(DIR, 'data/openimages'), mode='train', crop_size=256,
         normalize=False, **kwargs):
         super().__init__(root, [transforms.ToTensor()], **kwargs)
 
@@ -352,6 +349,7 @@ class OpenImages(BaseDataset):
         # apply random scaling + crop, put each pixel
         # in [0.,1.] and reshape to (C x H x W)
         return transformed, bpp
+
 
 class CityScapes(datasets.Cityscapes):
     """CityScapes wrapper. Docs: `datasets.Cityscapes.`"""

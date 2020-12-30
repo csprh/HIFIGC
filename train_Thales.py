@@ -527,7 +527,7 @@ if __name__ == '__main__':
     logger.info('USING DEVICE {}'.format(device))
     logger.info('USING GPU ID {}'.format(args.gpu))
     logger.info('USING DATASET: {}'.format(args.dataset))
-    ThalesRoot = '/space/csprh/DASA/DATABASES/'
+    ThalesRoot = '/space/csprh/DASA/DATABASES/Thales/ROIs2TTV/'
     args.dataset_path = ThalesRoot
     args.dataset = 'thales'
 

@@ -527,58 +527,28 @@ if __name__ == '__main__':
     logger.info('USING DEVICE {}'.format(device))
     logger.info('USING GPU ID {}'.format(args.gpu))
     logger.info('USING DATASET: {}'.format(args.dataset))
-    C101Root = '/space/csprh/DASA/DATABASES/'
-    args.C101Root = C101Root
+    ThalesRoot = '/space/csprh/DASA/DATABASES/'
+    args.dataset_path = ThalesRoot
+    args.dataset = 'thales'
 
     W = 256
     H = 256
-    #transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-    #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor(),
-    #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+    test_loader = datasets.get_dataloaders(args.dataset,
+                                root=args.dataset_path,
+                                batch_size=args.batch_size,
+                                logger=logger,
+                                mode='validation',
+                                shuffle=True,
+                                normalize=args.normalize_input_image)
 
-    #transform = transforms.Compose([transforms.Grayscale(3), transforms.Resize((W, H)),  transforms.ToTensor()])
-    #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
-
-    transform = transforms.Compose([
-    #transforms.RandomHorizontalFlip(p=0.5),
-    transforms.Resize((W,H)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
-    #transform = transforms.Compose(
-    #[transforms.ToPILImage(),
-    # transforms.Resize((W, H)),
-     #transforms.ToTensor(),
-     #transforms.Normalize(mean=[0.485, 0.456, 0.406],
-     #                     std=[0.229, 0.224, 0.225])])
-
-    wholeset = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transform)
-    wholeset.image_dims = (3, W, H)
-
-    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
-    #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
-
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
-
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
-
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
-    #test_loader = datasets.get_dataloaders(args.dataset,
-    #                            root=args.dataset_path,
-    #                            batch_size=args.batch_size,
-    #                            logger=logger,
-    #                            mode='validation',
-    #                            shuffle=True,
-    #                            normalize=args.normalize_input_image)
-
-    #train_loader = datasets.get_dataloaders(args.dataset,
-    #                            root=args.dataset_path,
-    #                            batch_size=args.batch_size,
-    #                            logger=logger,
-    #                            mode='train',
-    #                            shuffle=True,
-    #                            normalize=args.normalize_input_image)
+    train_loader = datasets.get_dataloaders(args.dataset,
+                                root=args.dataset_path,
+                                batch_size=args.batch_size,
+                                logger=logger,
+                                mode='train',
+                                shuffle=True,
+                                normalize=args.normalize_input_image)
 
     args.n_data = len(train_loader.dataset)
     args.image_dims = wholeset.image_dims
@@ -597,8 +567,7 @@ if __name__ == '__main__':
 
     """
 
-    python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
-    python3 -m pudb.run train_C101.py -bs 8 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -m pudb.run train_Thales.py -bs 8 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
 
     TODO
     Generate metrics
