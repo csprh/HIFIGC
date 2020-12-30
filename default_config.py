@@ -21,6 +21,7 @@ class Datasets(object):
     OPENIMAGES = 'openimages'
     CITYSCAPES = 'cityscapes'
     JETS = 'jetimages'
+    THALES = 'thales'
 
 class DatasetPaths(object):
     OPENIMAGES = 'data/openimages'

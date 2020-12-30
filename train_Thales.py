@@ -235,14 +235,13 @@ def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_
         epoch_test_loss.append(compression_loss.item())
         mean_test_loss = np.mean(epoch_test_loss)
         mean_test_acc = np.mean(classi_acc.item())
-        mean_test_classi_loss = np.mean(classi_loss.item())
 
         #best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
         #                             best_test_loss, start_time, epoch_start_time,
         #                             batch_size=data.shape[0],avg_bpp=0 ,header='[TEST]',
         #                             logger=logger, writer=test_writer)
 
-    return best_test_loss, epoch_test_loss, mean_test_acc, mean_test_classi_loss
+    return best_test_loss, epoch_test_loss, mean_test_acc
 
 def train_test_val_dataset(dataset, test_split=0.1, val_split=0.1, random_state=1):
     train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split, random_state=random_state)
@@ -284,8 +283,6 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         test_index = 0
         test_acc_total= 0
         mean_test_acc_total = 0
-        test_classi_loss_total = 0
-        best_mean_test_classi_loss_total = 10000000000
         for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
             #if idx == 10:
@@ -352,14 +349,11 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     test_data, ytest = test_loader_iter.next()
 
                 ytest = ytest.to(device)
-                best_test_loss, epoch_test_loss, mean_test_acc, mean_test_classi_loss = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
+                best_test_loss, epoch_test_loss, mean_test_acc = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
                      best_test_loss, start_time, epoch_start_time, logger, train_writer, test_writer)
 
-                test_index = test_index + 1
-                test_classi_loss_total = test_classi_loss_total + mean_test_classi_loss
-                mean_test_classi_loss_total = test_classi_loss_total/test_index
-
                 test_acc_total = test_acc_total  + mean_test_acc
+                test_index = test_index + 1
                 mean_test_acc_total = test_acc_total/test_index
 
                 with open(os.path.join(args.storage_save, 'storage_{}_tmp.pkl'.format(args.name)), 'wb') as handle:
@@ -373,8 +367,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     logger.info('Reached step limit [args.n_steps = {}]'.format(args.n_steps))
                     break
 
-            if mean_test_classi_loss_total < best_mean_test_classi_loss_total
-                best_mean_test_classi_loss_total = mean_test_classi_loss_total
+            if (idx % args.save_interval == 1) and (idx > args.save_interval):
                 ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
             # LR scheduling
             if model.use_classiOnly is True:
@@ -534,58 +527,28 @@ if __name__ == '__main__':
     logger.info('USING DEVICE {}'.format(device))
     logger.info('USING GPU ID {}'.format(args.gpu))
     logger.info('USING DATASET: {}'.format(args.dataset))
-    C101Root = '/space/csprh/DASA/DATABASES/'
-    args.C101Root = C101Root
+    ThalesRoot = '/space/csprh/DASA/DATABASES/'
+    args.dataset_path = ThalesRoot
+    args.dataset = 'thales'
 
     W = 256
     H = 256
-    #transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-    #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor(),
-    #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+    test_loader = datasets.get_dataloaders(args.dataset,
+                                root=args.dataset_path,
+                                batch_size=args.batch_size,
+                                logger=logger,
+                                mode='validation',
+                                shuffle=True,
+                                normalize=args.normalize_input_image)
 
-    #transform = transforms.Compose([transforms.Grayscale(3), transforms.Resize((W, H)),  transforms.ToTensor()])
-    #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
-
-    transform = transforms.Compose([
-    #transforms.RandomHorizontalFlip(p=0.5),
-    transforms.Resize((W,H)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
-    #transform = transforms.Compose(
-    #[transforms.ToPILImage(),
-    # transforms.Resize((W, H)),
-     #transforms.ToTensor(),
-     #transforms.Normalize(mean=[0.485, 0.456, 0.406],
-     #                     std=[0.229, 0.224, 0.225])])
-
-    wholeset = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transform)
-    wholeset.image_dims = (3, W, H)
-
-    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
-    #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
-
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
-
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
-
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
-    #test_loader = datasets.get_dataloaders(args.dataset,
-    #                            root=args.dataset_path,
-    #                            batch_size=args.batch_size,
-    #                            logger=logger,
-    #                            mode='validation',
-    #                            shuffle=True,
-    #                            normalize=args.normalize_input_image)
-
-    #train_loader = datasets.get_dataloaders(args.dataset,
-    #                            root=args.dataset_path,
-    #                            batch_size=args.batch_size,
-    #                            logger=logger,
-    #                            mode='train',
-    #                            shuffle=True,
-    #                            normalize=args.normalize_input_image)
+    train_loader = datasets.get_dataloaders(args.dataset,
+                                root=args.dataset_path,
+                                batch_size=args.batch_size,
+                                logger=logger,
+                                mode='train',
+                                shuffle=True,
+                                normalize=args.normalize_input_image)
 
     args.n_data = len(train_loader.dataset)
     args.image_dims = wholeset.image_dims
@@ -604,8 +567,7 @@ if __name__ == '__main__':
 
     """
 
-    python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
-    python3 -m pudb.run train_C101.py -bs 8 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -m pudb.run train_Thales.py -bs 8 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
 
     TODO
     Generate metrics

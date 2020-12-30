@@ -20,7 +20,8 @@ NUM_DATASET_WORKERS = 4
 SCALE_MIN = 0.75
 SCALE_MAX = 0.95
 DATASETS_DICT = {"openimages": "OpenImages", "cityscapes": "CityScapes",
-                 "jetimages": "JetImages", "evaluation": "Evaluation"}
+                 "jetimages": "JetImages", "evaluation": "Evaluation",
+                 "thales":"thales"}
 DATASETS = list(DATASETS_DICT.keys())
 
 def get_dataset(dataset):
@@ -50,7 +51,7 @@ def get_dataloaders(dataset, mode='train', root=None, shuffle=True, pin_memory=T
 
     Parameters
     ----------
-    dataset : {"openimages", "jetimages", "evaluation"}
+    dataset : {"openimages", "jetimages", "evaluation", "thales"}
         Name of the dataset to load
 
     root : str
@@ -178,8 +179,8 @@ class Evaluation(BaseDataset):
 
         return transformed, bpp, filename
 
-class OpenImages(BaseDataset):
-    """OpenImages dataset from [1].
+class thales(BaseDataset):
+    """thales
 
     Parameters
     ----------
@@ -194,6 +195,89 @@ class OpenImages(BaseDataset):
     files = {"train": "train", "test": "test", "val": "validation"}
 
     def __init__(self, root=os.path.join(DIR, 'data/openimages'), mode='train', crop_size=256,
+        normalize=False, **kwargs):
+        super().__init__(root, [transforms.ToTensor()], **kwargs)
+
+        if mode == 'train':
+            data_dir = self.train_data
+        elif mode == 'validation':
+            data_dir = self.val_data
+        else:
+            raise ValueError('Unknown mode!')
+
+        #
+        self.imgs = glob.glob(os.path.join(data_dir_class0, '*.png'))
+        self.labels = np.zeros(len(self.imgs))
+        tmp = glob.glob(os.path.join(data_dir_class1, '*.png'))
+        self.labels += np.ones(len(tmp))
+        self.imgs += tmp
+
+        self.crop_size = crop_size
+        self.image_dims = (3, self.crop_size, self.crop_size)
+        self.scale_min = SCALE_MIN
+        self.scale_max = SCALE_MAX
+        self.normalize = normalize
+
+    def _transforms(self, H, W):
+        """
+        Up(down)scale and randomly crop to `crop_size` x `crop_size`
+        """
+        transforms_list = [# transforms.ToPILImage(),
+                           transforms.RandomHorizontalFlip(),
+                           #transforms.Resize((math.ceil(scale * H), math.ceil(scale * W))),
+                           #transforms.RandomCrop(self.crop_size),
+                           transforms.ToTensor()]
+
+        if self.normalize is True:
+            transforms_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+
+        return transforms.Compose(transforms_list)
+
+    def __getitem__(self, idx):
+        """ TODO: This definitely needs to be optimized.
+        Get the image of `idx`
+
+        Return
+        ------
+        sample : torch.Tensor
+            Tensor in [0.,1.] of shape `img_size`.
+
+        """
+        # img values already between 0 and 255
+        img_path = self.imgs[idx]
+        y = self.label[idx]
+        filesize = os.path.getsize(img_path)
+        try:
+
+            img = PIL.Image.open(img_path)
+            img = img.convert('RGB')
+            W, H = img.size  # slightly confusing
+            dynamic_transform = self._transforms(H, W)
+            transformed = dynamic_transform(img)
+        except:
+            return None
+
+        # apply random scaling + crop, put each pixel
+        # in [0.,1.] and reshape to (C x H x W)
+        return transformed, y
+
+
+class OpenImages(BaseDataset):
+    """thales dataset from [1].
+
+    Parameters
+    ----------
+    root : string
+        Root directory of dataset.
+
+    References
+    ----------
+    [1] https://storage.googleapis.com/openimages/web/factsfigures.html
+
+    """
+    files = {"train": "train", "test": "test", "val": "validation"}
+
+    def __init__(self, root=os.path.join(DIR, 'data/thales'), mode='train', crop_size=256,
         normalize=False, **kwargs):
         super().__init__(root, [transforms.ToTensor()], **kwargs)
 
