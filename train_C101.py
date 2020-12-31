@@ -373,9 +373,9 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     logger.info('Reached step limit [args.n_steps = {}]'.format(args.n_steps))
                     break
 
-            if mean_test_classi_loss_total < best_mean_test_classi_loss_total:
-                best_mean_test_classi_loss_total = mean_test_classi_loss_total
-                ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
+                if mean_test_classi_loss_total < best_mean_test_classi_loss_total:
+                    best_mean_test_classi_loss_total = mean_test_classi_loss_total
+                    ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
             # LR scheduling
             if model.use_classiOnly is True:
                 utils.update_lr(args, classi_opt, model.step_counter, logger)
