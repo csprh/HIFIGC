@@ -242,7 +242,7 @@ class thales(BaseDataset):
         # img values already between 0 and 255
         img_path = self.imgs[idx]
         y = self.labels[idx]
-        y = torch.from_numpy(y.astype('long'))
+        y = y.astype('long')
         filesize = os.path.getsize(img_path)
         try:
 
