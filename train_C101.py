@@ -375,11 +375,11 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
 
 
             # LR scheduling
-            if model.use_classiOnly is True:
+        if model.use_classiOnly is True:
                 utils.update_lr(args, classi_opt, model.step_counter, logger)
-            utils.update_lr(args, amortization_opt, model.step_counter, logger)
-            utils.update_lr(args, hyperlatent_likelihood_opt, model.step_counter, logger)
-            if model.use_discriminator is True:
+        utils.update_lr(args, amortization_opt, model.step_counter, logger)
+        utils.update_lr(args, hyperlatent_likelihood_opt, model.step_counter, logger)
+        if model.use_discriminator is True:
                 utils.update_lr(args, disc_opt, model.step_counter, logger)
         if mean_test_classi_loss_total < best_mean_test_classi_loss_total:
             logger.info(f'Classi_loss decreased to : {mean_test_classi_loss:.3f}.  Saving Model')
