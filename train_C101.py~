@@ -576,13 +576,13 @@ if __name__ == '__main__':
                                         download=False, transform=transformTrain)
     wholeset1.image_dims = (3, W, H)
 
-    trainset1, valset1, testset1 = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
+    trainset1, valset1, testset1 = train_test_val_dataset(wholeset1, test_split=0.1, val_split=0.1, random_state=1)
 
     wholeset2 = torchvision.datasets.Caltech101(root=C101Root,
                                         download=False, transform=transformTest)
     wholeset2.image_dims = (3, W, H)
 
-    trainset2, valset2, testset2 = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
+    trainset2, valset2, testset2 = train_test_val_dataset(wholeset2, test_split=0.1, val_split=0.1, random_state=1)
     #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
     train_loader = torch.utils.data.DataLoader(trainset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
