@@ -441,7 +441,7 @@ if __name__ == '__main__':
         help="Number of gradient steps. Optimization stops at the earlier of n_steps/n_epochs.")
     optim_args.add_argument('-epochs', '--n_epochs', type=int, default=100,
         help="Number of passes over training dataset. Optimization stops at the earlier of n_steps/n_epochs.")
-    optim_args.add_argument("-lr", "--learning_rate", type=float, default=1e-4, help="Optimizer learning rate.")
+    optim_args.add_argument("-lr", "--learning_rate", type=float, default=1e-3, help="Optimizer learning rate.")
     optim_args.add_argument("-wd", "--weight_decay", type=float, default=1e-6, help="Coefficient of L2 regularization.")
 
     # Architecture-related options
@@ -549,10 +549,17 @@ if __name__ == '__main__':
     #transform = transforms.Compose([transforms.Grayscale(3), transforms.Resize((W, H)),  transforms.ToTensor()])
     #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
 
-    transform = transforms.Compose([
+    transformTrain = transforms.Compose([
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.RandomRotation(10),
     transforms.RandomGrayscale(p=0.1),
+    transforms.Resize((W,H)),
+    #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
+    #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
+
+    transformTest = transforms.Compose([
     transforms.Resize((W,H)),
     #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
     #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
@@ -565,18 +572,24 @@ if __name__ == '__main__':
      #transforms.Normalize(mean=[0.485, 0.456, 0.406],
      #                     std=[0.229, 0.224, 0.225])])
 
-    wholeset = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transform)
-    wholeset.image_dims = (3, W, H)
+    wholeset1 = torchvision.datasets.Caltech101(root=C101Root,
+                                        download=False, transform=transformTrain)
+    wholeset1.image_dims = (3, W, H)
 
-    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
+    trainset1, valset1, testset1 = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
+
+    wholeset2 = torchvision.datasets.Caltech101(root=C101Root,
+                                        download=False, transform=transformTest)
+    wholeset2.image_dims = (3, W, H)
+
+    trainset2, valset2, testset2 = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
     #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset2, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    val_loader = torch.utils.data.DataLoader(valset2, batch_size=args.batch_size, shuffle=True, num_workers=2)
     #test_loader = datasets.get_dataloaders(args.dataset,
     #                            root=args.dataset_path,
     #                            batch_size=args.batch_size,
