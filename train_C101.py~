@@ -271,7 +271,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
     if model.use_discriminator is True:
         disc_opt = optimizers['disc']
 
-
+    best_mean_test_classi_loss_total = 10000000000
     for epoch in trange(args.n_epochs, desc='Epoch'):
 
         epoch_loss, epoch_test_loss = [], []
@@ -285,7 +285,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         test_acc_total= 0
         mean_test_acc_total = 0
         test_classi_loss_total = 0
-        best_mean_test_classi_loss_total = 10000000000
+
         for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
             #if idx == 10:
@@ -382,6 +382,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
             if model.use_discriminator is True:
                 utils.update_lr(args, disc_opt, model.step_counter, logger)
         if mean_test_classi_loss_total < best_mean_test_classi_loss_total:
+            logger.info(f'Classi_loss decreased to : {mean_test_classi_loss:.3f}.  Saving Model')
             best_mean_test_classi_loss_total = mean_test_classi_loss_total
             ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
         # End epoch

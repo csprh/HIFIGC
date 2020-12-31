@@ -271,7 +271,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
     if model.use_discriminator is True:
         disc_opt = optimizers['disc']
 
-
+    best_mean_test_classi_loss_total = 10000000000
     for epoch in trange(args.n_epochs, desc='Epoch'):
 
         epoch_loss, epoch_test_loss = [], []
@@ -285,7 +285,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         test_acc_total= 0
         mean_test_acc_total = 0
         test_classi_loss_total = 0
-        best_mean_test_classi_loss_total = 10000000000
+
         for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
             #if idx == 10:
@@ -550,9 +550,9 @@ if __name__ == '__main__':
     #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
 
     transform = transforms.Compose([
-    transforms.RandomHorizontalFlip(p=0.5),
+    #transforms.RandomHorizontalFlip(p=0.5),
     #transforms.Resize((W,H)),
-    transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
+    #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
     #transform = transforms.Compose(
