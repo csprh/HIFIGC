@@ -242,6 +242,7 @@ class thales(BaseDataset):
         # img values already between 0 and 255
         img_path = self.imgs[idx]
         y = self.labels[idx]
+        y = y.long()
         filesize = os.path.getsize(img_path)
         try:
 
