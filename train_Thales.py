@@ -534,7 +534,7 @@ if __name__ == '__main__':
     W = 256
     H = 256
 
-    test_loader = datasets.get_dataloaders(args.dataset,
+    val_loader = datasets.get_dataloaders(args.dataset,
                                 root=args.dataset_path,
                                 batch_size=args.batch_size,
                                 logger=logger,
