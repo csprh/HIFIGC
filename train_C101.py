@@ -540,9 +540,21 @@ if __name__ == '__main__':
     #transform = transforms.Compose([transforms.Grayscale(3), transforms.Resize((W, H)),  transforms.ToTensor()])
     #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
 
-    transform = transforms.Compose([
+
+    transformTrain = transforms.Compose([
     #transforms.RandomHorizontalFlip(p=0.5),
+    #transforms.RandomRotation(10),
+    #transforms.RandomGrayscale(p=0.1),
     transforms.Resize((W,H)),
+    #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
+    #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
+
+    transformTest = transforms.Compose([
+    transforms.Resize((W,H)),
+    #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
+    #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
     #transform = transforms.Compose(
@@ -552,18 +564,24 @@ if __name__ == '__main__':
      #transforms.Normalize(mean=[0.485, 0.456, 0.406],
      #                     std=[0.229, 0.224, 0.225])])
 
-    wholeset = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transform)
-    wholeset.image_dims = (3, W, H)
+    wholeset1 = torchvision.datasets.Caltech101(root=C101Root,
+                                        download=False, transform=transformTrain)
+    wholeset1.image_dims = (3, W, H)
 
-    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
+    trainset1, valset1, testset1 = train_test_val_dataset(wholeset1, test_split=0.1, val_split=0.1, random_state=1)
+
+    wholeset2 = torchvision.datasets.Caltech101(root=C101Root,
+                                        download=False, transform=transformTest)
+    wholeset2.image_dims = (3, W, H)
+
+    trainset2, valset2, testset2 = train_test_val_dataset(wholeset2, test_split=0.1, val_split=0.1, random_state=1)
     #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset2, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    val_loader = torch.utils.data.DataLoader(valset2, batch_size=args.batch_size, shuffle=True, num_workers=2)
     #test_loader = datasets.get_dataloaders(args.dataset,
     #                            root=args.dataset_path,
     #                            batch_size=args.batch_size,
@@ -581,7 +599,7 @@ if __name__ == '__main__':
     #                            normalize=args.normalize_input_image)
 
     args.n_data = len(train_loader.dataset)
-    args.image_dims = wholeset.image_dims
+    args.image_dims = wholeset1.image_dims
     logger.info('Training elements: {}'.format(args.n_data))
     logger.info('Input Dimensions: {}'.format(args.image_dims))
     logger.info('Optimizers: {}'.format(optimizers))

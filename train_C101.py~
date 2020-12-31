@@ -386,7 +386,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         logger.info(f'ClassiAccTrain: mean={classi_acc_total_train.mean(dim=0):.3f}, std={classi_acc_total_train.std(dim=0):.3f}')
 
         #end_of_epoch_metrics(args, model, train_loader, device, logger)
-        end_of_epoch_metrics(args, model, test_loader, device, logger)
+        #end_of_epoch_metrics(args, model, test_loader, device, logger)
 
 
         if model.step_counter > args.n_steps:
@@ -430,7 +430,7 @@ if __name__ == '__main__':
     optim_args = parser.add_argument_group("Optimization-related options")
     optim_args.add_argument('-steps', '--n_steps', type=float, default=1e6,
         help="Number of gradient steps. Optimization stops at the earlier of n_steps/n_epochs.")
-    optim_args.add_argument('-epochs', '--n_epochs', type=int, default=30,
+    optim_args.add_argument('-epochs', '--n_epochs', type=int, default=100,
         help="Number of passes over training dataset. Optimization stops at the earlier of n_steps/n_epochs.")
     optim_args.add_argument("-lr", "--learning_rate", type=float, default=1e-4, help="Optimizer learning rate.")
     optim_args.add_argument("-wd", "--weight_decay", type=float, default=1e-6, help="Coefficient of L2 regularization.")
@@ -502,8 +502,9 @@ if __name__ == '__main__':
             optimizers['disc'] = disc_opt
 
     classi_parameters = model.Classi.parameters()
-    classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-4)
-    #classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
+    #classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-4)
+    #classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-6)
+    classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
     optimizers['classi'] = classi_opt
 
     for params in model.Encoder.parameters():
