@@ -512,7 +512,7 @@ if __name__ == '__main__':
 
     classi_parameters = model.Classi.parameters()
     #classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-4)
-    classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-3)
+    classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-6)
     #classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
     optimizers['classi'] = classi_opt
 
@@ -550,9 +550,9 @@ if __name__ == '__main__':
     #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
 
     transformTrain = transforms.Compose([
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.RandomRotation(10),
-    transforms.RandomGrayscale(p=0.1),
+    #transforms.RandomHorizontalFlip(p=0.5),
+    #transforms.RandomRotation(10),
+    #transforms.RandomGrayscale(p=0.1),
     transforms.Resize((W,H)),
     #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
     #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
