@@ -235,14 +235,13 @@ def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_
         epoch_test_loss.append(compression_loss.item())
         mean_test_loss = np.mean(epoch_test_loss)
         mean_test_acc = np.mean(classi_acc.item())
-        mean_test_classi_loss = np.mean(classi_loss.item())
 
         #best_test_loss = utils.log(model, storage, epoch, idx, mean_test_loss, compression_loss.item(),
         #                             best_test_loss, start_time, epoch_start_time,
         #                             batch_size=data.shape[0],avg_bpp=0 ,header='[TEST]',
         #                             logger=logger, writer=test_writer)
 
-    return best_test_loss, epoch_test_loss, mean_test_acc, mean_test_classi_loss
+    return best_test_loss, epoch_test_loss, mean_test_acc
 
 def train_test_val_dataset(dataset, test_split=0.1, val_split=0.1, random_state=1):
     train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split, random_state=random_state)
@@ -271,7 +270,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
     if model.use_discriminator is True:
         disc_opt = optimizers['disc']
 
-    best_mean_test_classi_loss_total = 10000000000
+
     for epoch in trange(args.n_epochs, desc='Epoch'):
 
         epoch_loss, epoch_test_loss = [], []
@@ -284,8 +283,6 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         test_index = 0
         test_acc_total= 0
         mean_test_acc_total = 0
-        test_classi_loss_total = 0
-
         for idx, (data, y) in enumerate(tqdm(train_loader, desc='Train'), 0):
 
             #if idx == 10:
@@ -352,14 +349,11 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     test_data, ytest = test_loader_iter.next()
 
                 ytest = ytest.to(device)
-                best_test_loss, epoch_test_loss, mean_test_acc, mean_test_classi_loss = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
+                best_test_loss, epoch_test_loss, mean_test_acc = test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_loss, storage_test,
                      best_test_loss, start_time, epoch_start_time, logger, train_writer, test_writer)
 
-                test_index = test_index + 1
-                test_classi_loss_total = test_classi_loss_total + mean_test_classi_loss
-                mean_test_classi_loss_total = test_classi_loss_total/test_index
-
                 test_acc_total = test_acc_total  + mean_test_acc
+                test_index = test_index + 1
                 mean_test_acc_total = test_acc_total/test_index
 
                 with open(os.path.join(args.storage_save, 'storage_{}_tmp.pkl'.format(args.name)), 'wb') as handle:
@@ -373,18 +367,15 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     logger.info('Reached step limit [args.n_steps = {}]'.format(args.n_steps))
                     break
 
-
+            if (idx % args.save_interval == 1) and (idx > args.save_interval):
+                ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
             # LR scheduling
-        if model.use_classiOnly is True:
+            if model.use_classiOnly is True:
                 utils.update_lr(args, classi_opt, model.step_counter, logger)
-        utils.update_lr(args, amortization_opt, model.step_counter, logger)
-        utils.update_lr(args, hyperlatent_likelihood_opt, model.step_counter, logger)
-        if model.use_discriminator is True:
+            utils.update_lr(args, amortization_opt, model.step_counter, logger)
+            utils.update_lr(args, hyperlatent_likelihood_opt, model.step_counter, logger)
+            if model.use_discriminator is True:
                 utils.update_lr(args, disc_opt, model.step_counter, logger)
-        if mean_test_classi_loss_total < best_mean_test_classi_loss_total:
-            logger.info(f'Classi_loss decreased to : {mean_test_classi_loss:.3f}.  Saving Model')
-            best_mean_test_classi_loss_total = mean_test_classi_loss_total
-            ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
         # End epoch
         mean_epoch_loss = np.mean(epoch_loss)
         mean_epoch_test_loss = np.mean(epoch_test_loss)
@@ -395,7 +386,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         logger.info(f'ClassiAccTrain: mean={classi_acc_total_train.mean(dim=0):.3f}, std={classi_acc_total_train.std(dim=0):.3f}')
 
         #end_of_epoch_metrics(args, model, train_loader, device, logger)
-        #end_of_epoch_metrics(args, model, test_loader, device, logger)
+        end_of_epoch_metrics(args, model, test_loader, device, logger)
 
 
         if model.step_counter > args.n_steps:
@@ -439,9 +430,9 @@ if __name__ == '__main__':
     optim_args = parser.add_argument_group("Optimization-related options")
     optim_args.add_argument('-steps', '--n_steps', type=float, default=1e6,
         help="Number of gradient steps. Optimization stops at the earlier of n_steps/n_epochs.")
-    optim_args.add_argument('-epochs', '--n_epochs', type=int, default=100,
+    optim_args.add_argument('-epochs', '--n_epochs', type=int, default=30,
         help="Number of passes over training dataset. Optimization stops at the earlier of n_steps/n_epochs.")
-    optim_args.add_argument("-lr", "--learning_rate", type=float, default=1e-3, help="Optimizer learning rate.")
+    optim_args.add_argument("-lr", "--learning_rate", type=float, default=1e-4, help="Optimizer learning rate.")
     optim_args.add_argument("-wd", "--weight_decay", type=float, default=1e-6, help="Coefficient of L2 regularization.")
 
     # Architecture-related options
@@ -511,8 +502,7 @@ if __name__ == '__main__':
             optimizers['disc'] = disc_opt
 
     classi_parameters = model.Classi.parameters()
-    #classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-4)
-    classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-6)
+    classi_opt = torch.optim.Adam(classi_parameters, lr=1e-3, weight_decay=1e-4)
     #classi_opt = torch.optim.Adam(classi_parameters, lr=args.learning_rate)
     optimizers['classi'] = classi_opt
 
@@ -549,20 +539,9 @@ if __name__ == '__main__':
     #transform = transforms.Compose([transforms.Grayscale(3), transforms.Resize((W, H)),  transforms.ToTensor()])
     #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
 
-    transformTrain = transforms.Compose([
+    transform = transforms.Compose([
     #transforms.RandomHorizontalFlip(p=0.5),
-    #transforms.RandomRotation(10),
-    #transforms.RandomGrayscale(p=0.1),
     transforms.Resize((W,H)),
-    #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
-    #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
-
-    transformTest = transforms.Compose([
-    transforms.Resize((W,H)),
-    #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
-    #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
     #transform = transforms.Compose(
@@ -572,24 +551,18 @@ if __name__ == '__main__':
      #transforms.Normalize(mean=[0.485, 0.456, 0.406],
      #                     std=[0.229, 0.224, 0.225])])
 
-    wholeset1 = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transformTrain)
-    wholeset1.image_dims = (3, W, H)
+    wholeset = torchvision.datasets.Caltech101(root=C101Root,
+                                        download=False, transform=transform)
+    wholeset.image_dims = (3, W, H)
 
-    trainset1, valset1, testset1 = train_test_val_dataset(wholeset1, test_split=0.1, val_split=0.1, random_state=1)
-
-    wholeset2 = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transformTest)
-    wholeset2.image_dims = (3, W, H)
-
-    trainset2, valset2, testset2 = train_test_val_dataset(wholeset2, test_split=0.1, val_split=0.1, random_state=1)
+    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
     #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
 
-    train_loader = torch.utils.data.DataLoader(trainset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    test_loader = torch.utils.data.DataLoader(testset2, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    val_loader = torch.utils.data.DataLoader(valset2, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
     #test_loader = datasets.get_dataloaders(args.dataset,
     #                            root=args.dataset_path,
     #                            batch_size=args.batch_size,
@@ -607,7 +580,7 @@ if __name__ == '__main__':
     #                            normalize=args.normalize_input_image)
 
     args.n_data = len(train_loader.dataset)
-    args.image_dims = wholeset1.image_dims
+    args.image_dims = wholeset.image_dims
     logger.info('Training elements: {}'.format(args.n_data))
     logger.info('Input Dimensions: {}'.format(args.image_dims))
     logger.info('Optimizers: {}'.format(optimizers))
