@@ -550,7 +550,7 @@ if __name__ == '__main__':
     transform = transforms.Compose([
     transforms.RandomHorizontalFlip(p=0.5),
     #transforms.Resize((W,H)),
-    transforms.RandomCrop((W,H), pad_if_needed-True, padding_mode='edge')
+    transforms.RandomCrop((W,H), pad_if_needed-True, padding_mode='edge'),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
     #transform = transforms.Compose(
