@@ -543,7 +543,7 @@ if __name__ == '__main__':
 
     transformTrain = transforms.Compose([
     #transforms.RandomHorizontalFlip(p=0.5),
-    transforms.RandomRotation(10),
+    #transforms.RandomRotation(10),
     #transforms.RandomGrayscale(p=0.1),
     transforms.Resize((W,H)),
     #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
@@ -616,7 +616,7 @@ if __name__ == '__main__':
     """
 
     python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
-    python3 -m pudb.run train_C101.py -bs 8 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -m pudb.run train_C101.py -bs 12 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
 
     TODO
     Generate metrics

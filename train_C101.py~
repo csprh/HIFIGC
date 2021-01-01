@@ -543,7 +543,7 @@ if __name__ == '__main__':
 
     transformTrain = transforms.Compose([
     #transforms.RandomHorizontalFlip(p=0.5),
-    #transforms.RandomRotation(10),
+    transforms.RandomRotation(10),
     #transforms.RandomGrayscale(p=0.1),
     transforms.Resize((W,H)),
     #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
