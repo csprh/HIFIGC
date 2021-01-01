@@ -30,7 +30,7 @@ class ClassiOld1(nn.Module):
         x = self.l2(x)
         #x = F.softmax(x)
         return x
-class Classi2(nn.Module):
+class Classi(nn.Module):
     def __init__(self, image_dims, batch_size, activation='relu', C=101):
 
         super(Classi, self).__init__()
@@ -38,7 +38,7 @@ class Classi2(nn.Module):
         self.c1 = nn.Conv2d(220, 8, kernel_size=(3,3), stride=1)
         self.lr1 = nn.LeakyReLU(0.1)
         self.b1 = nn.BatchNorm2d(8)
-        self.d1 = nn.Dropout2d(0.6)
+        self.d1 = nn.Dropout2d(0.5)
         self.l1 = nn.Linear(1568,C) #8*12*12
 
     def forward(self, x):
@@ -63,7 +63,7 @@ class Classi2(nn.Module):
 #    activity_regularizer=regularizers.l2(1e-5))(t)
 #    t = LeakyReLU(alpha=0.1)(t)
 #    t = Dropout(0.5)(t)
-class Classi(nn.Module):
+class Classi2(nn.Module):
     def __init__(self, image_dims, batch_size, activation='relu', C=101):
 
         super(Classi, self).__init__()
