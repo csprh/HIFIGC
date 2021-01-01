@@ -53,12 +53,6 @@ class Classi(nn.Module):
         result = F.softmax(x)
         return x
 
-#c:\openpose\bin\OpenPoseDemo.exe --video c:\CIC\S03REC.mp4 --write_json c:\CICOutputS03REC_v2 --tracking 1 --number_people_max 6 --display 0 --render_pose 0
-#c:\openpose\bin\OpenPoseDemo.exe --video c:\CIC\S04REC.mp4 --write_json c:\CICOutputS04REC_v2 --tracking 1 --number_people_max 6 --display 0 --render_pose 0
-#c:\openpose\bin\OpenPoseDemo.exe --video c:\CIC\zoom_0.mp4 --write_json c:\CICOutputZoom0_v2 --tracking 1 --number_people_max 9 --display 0 --render_pose 0
-#c:\openpose\bin\OpenPoseDemo.exe --video c:\CIC\zoom_1.mp4 --write_json c:\CICOutputZoom1_v2 --tracking 1 --number_people_max 9 --display 0 --render_pose 0
-
-
 #    t = Conv2D(filters=8, kernel_size=(3, 3), strides=(1,1), padding='same', kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),
 #   bias_regularizer=regularizers.l2(1e-4),
 #    activity_regularizer=regularizers.l2(1e-5))(tin)
