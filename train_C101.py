@@ -296,7 +296,7 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     classi_acc  = losses['classi_acc']
                     compression_loss = losses['compression']
 
-                    optimize_loss(classi_loss, classi_opt)
+                    optimize_loss(classi_loss, classi_opt, retain_graph=True)
                     classi_loss_total_train[idx] = classi_loss.data
                     classi_acc_total_train[idx] = classi_acc.data
                     model.step_counter += 1
@@ -508,7 +508,7 @@ if __name__ == '__main__':
     optimizers['classi'] = classi_opt
 
     for params in model.Encoder.parameters():
-       params.requires_grad = False
+       params.requires_grad = True
     for params in model.Generator.parameters():
        params.requires_grad = False
 
@@ -543,7 +543,7 @@ if __name__ == '__main__':
 
     transformTrain = transforms.Compose([
     #transforms.RandomHorizontalFlip(p=0.5),
-    transforms.RandomRotation(5),
+    #transforms.RandomRotation(5),
     #transforms.RandomGrayscale(p=0.1),
     transforms.Resize((W,H)),
     #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
