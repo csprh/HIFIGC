@@ -36,6 +36,17 @@ from default_config import classi_only, hific_args, mse_lpips_args, directories,
 # go fast boi!!
 torch.backends.cudnn.benchmark = True
 
+
+class SquarePad:
+	def __call__(self, image):
+		w, h = image.size
+		max_wh = np.max([w, h])
+		hp = int((max_wh - w) / 2)
+		vp = int((max_wh - h) / 2)
+		padding = (hp, vp, hp, vp)
+		return F.pad(image, padding, 0, 'constant')
+
+
 def create_model(args, device, logger, storage, storage_test):
 
     start_time = time.time()
@@ -545,14 +556,18 @@ if __name__ == '__main__':
     #transforms.RandomHorizontalFlip(p=0.5),
     #transforms.RandomRotation(5),
     #transforms.RandomGrayscale(p=0.1),
+    SquarePad(),
     transforms.Resize((W,H)),
+    transforms.CenterCrop((W,H)),
     #transforms.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
     #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
 
     transformTest = transforms.Compose([
+    SquarePad(),
     transforms.Resize((W,H)),
+    transforms.CenterCrop((W,H)),
     #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
     #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
     transforms.ToTensor(),
@@ -616,7 +631,7 @@ if __name__ == '__main__':
     """
 
     python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
-    python3 -m pudb.run train_C101.py -bs 12 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -m pudb.run train_C101.py -bs 16 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
 
     TODO
     Generate metrics

@@ -38,7 +38,7 @@ class Classi(nn.Module):
         self.c1 = nn.Conv2d(220, 16, kernel_size=(3,3), stride=1)
         self.lr1 = nn.LeakyReLU(0.1)
         self.b1 = nn.BatchNorm2d(16)
-        self.d1 = nn.Dropout2d(0.6)
+        self.d1 = nn.Dropout2d(0.5)
         #self.l1 = nn.Linear(1568,C) #8*12*12
         self.l1 = nn.Linear(3136,C) #16*12*12
 
