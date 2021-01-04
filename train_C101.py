@@ -544,7 +544,7 @@ if __name__ == '__main__':
     transformTrain = transforms.Compose([
     #transforms.RandomHorizontalFlip(p=0.5),
     #transforms.RandomRotation(5),
-    transforms.RandomGrayscale(p=0.1),
+    #transforms.RandomGrayscale(p=0.1),
     transforms.Resize((W,H)),
     #transforms.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
     #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
