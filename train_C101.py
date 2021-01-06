@@ -579,9 +579,9 @@ if __name__ == '__main__':
 
     train_loader = torch.utils.data.DataLoader(trainset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    test_loader = torch.utils.data.DataLoader(testset2, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    val_loader = torch.utils.data.DataLoader(valset2, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    val_loader = torch.utils.data.DataLoader(valset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
     #test_loader = datasets.get_dataloaders(args.dataset,
     #                            root=args.dataset_path,
     #                            batch_size=args.batch_size,
@@ -617,6 +617,7 @@ if __name__ == '__main__':
 
     python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
     python3 -m pudb.run train_C101.py -bs 16 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
+    python3 -wd 1e-6 -bs 18 --model_type classi_only --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
 
     TODO
     Generate metrics
