@@ -86,7 +86,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     input_filenames_total = list()
     output_filenames_total = list()
     q_bpp_total, q_bpp_total_attained, LPIPS_total = torch.Tensor(N), torch.Tensor(N), torch.Tensor(N)
-    MS_SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
+    SSIM_total, PSNR_total = torch.Tensor(N), torch.Tensor(N)
     comp_loss_total, classi_loss_total, classi_acc_total1 = torch.Tensor(N), torch.Tensor(N),torch.Tensor(N)
     with torch.no_grad():
         thisIndx =  0
@@ -110,7 +110,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
 
     max_value = 255.
-    MS_SSIM_func = metrics.MS_SSIM(data_range=max_value)
+    SSIM_func = metrics.SSIM(data_range=max_value)
     utils.makedirs(args.output_dir)
 
     logger.info('Starting compression...')
@@ -160,9 +160,9 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
 
             # [0., 1.] -> [0., 255.]
             psnr = metrics.psnr(reconstruction.cpu().numpy() * max_value, data.cpu().numpy() * max_value, max_value)
-            ms_ssim = MS_SSIM_func(reconstruction * max_value, data * max_value)
+            ms_ssim = SSIM_func(reconstruction * max_value, data * max_value)
             PSNR_total[thisIndx] = torch.Tensor(psnr)
-            MS_SSIM_total[thisIndx] = ms_ssim.data
+            SSIM_total[thisIndx] = ms_ssim.data
 
             q_bpp_per_im = float(q_bpp.item()) if type(q_bpp) == torch.Tensor else float(q_bpp)
 
@@ -184,7 +184,7 @@ def end_of_epoch_metrics(args, model, data_loader, device, logger):
     logger.info(f'BPPA: mean={q_bpp_total_attained.mean(dim=0):.3f}, std={q_bpp_total_attained.std(dim=0):.3f}')
     logger.info(f'LPIPS: mean={LPIPS_total.mean(dim=0):.3f}, std={LPIPS_total.std(dim=0):.3f}')
     logger.info(f'PSNR: mean={PSNR_total.mean(dim=0):.3f}, std={PSNR_total.std(dim=0):.3f}')
-    logger.info(f'MS_SSIM: mean={MS_SSIM_total.mean(dim=0):.3f}, std={MS_SSIM_total.std(dim=0):.3f}')
+    logger.info(f'SSIM: mean={SSIM_total.mean(dim=0):.3f}, std={SSIM_total.std(dim=0):.3f}')
     logger.info(f'CompLoss: mean={comp_loss_total.mean(dim=0):.3f}, std={comp_loss_total.std(dim=0):.3f}')
     logger.info(f'ClassiLoss: mean={classi_loss_total.mean(dim=0):.3f}, std={classi_loss_total.std(dim=0):.3f}')
     logger.info(f'ClassiAcc1: mean={classi_acc_total1.mean(dim=0):.3f}, std={classi_acc_total1.std(dim=0):.3f}')
@@ -532,71 +532,26 @@ if __name__ == '__main__':
 
     W = 256
     H = 256
-    #transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-    #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor(),
-    #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
-
-    #transform = transforms.Compose([transforms.Grayscale(3), transforms.Resize((W, H)),  transforms.ToTensor()])
-    #transform = transforms.Compose([transforms.Resize((W, H)),  transforms.ToTensor()])
 
 
-    transformTrain = transforms.Compose([
-    #transforms.RandomHorizontalFlip(p=0.5),
-    #transforms.RandomRotation(5),
-    #transforms.RandomGrayscale(p=0.1),
+    transform = transforms.Compose([
     transforms.Resize((W,H)),
-    #transforms.ColorJitter(brightness=0.05, contrast=0.05, saturation=0.05, hue=0.05),
-    #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
 
-    transformTest = transforms.Compose([
-    transforms.Resize((W,H)),
-    #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
-    #transforms.RandomCrop((W,H), pad_if_needed=True, padding_mode='edge'),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
-    #transform = transforms.Compose(
-    #[transforms.ToPILImage(),
-    # transforms.Resize((W, H)),
-     #transforms.ToTensor(),
-     #transforms.Normalize(mean=[0.485, 0.456, 0.406],
-     #                     std=[0.229, 0.224, 0.225])])
 
-    wholeset1 = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transformTrain)
-    wholeset1.image_dims = (3, W, H)
+    wholeset = torchvision.datasets.Caltech101(root=C101Root,
+                                        download=False, transform=transform)
+    wholeset.image_dims = (3, W, H)
 
-    trainset1, valset1, testset1 = train_test_val_dataset(wholeset1, test_split=0.1, val_split=0.1, random_state=1)
+    trainset, valset, testset = train_test_val_dataset(wholeset1, test_split=0.1, val_split=0.1, random_state=1)
 
-    wholeset2 = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transformTest)
-    wholeset2.image_dims = (3, W, H)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    trainset2, valset2, testset2 = train_test_val_dataset(wholeset2, test_split=0.1, val_split=0.1, random_state=1)
-    #trainset, testset = train_val_dataset(wholeset, val_split=0.25)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    train_loader = torch.utils.data.DataLoader(trainset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-    test_loader = torch.utils.data.DataLoader(testset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
-
-    val_loader = torch.utils.data.DataLoader(valset1, batch_size=args.batch_size, shuffle=True, num_workers=2)
-    #test_loader = datasets.get_dataloaders(args.dataset,
-    #                            root=args.dataset_path,
-    #                            batch_size=args.batch_size,
-    #                            logger=logger,
-    #                            mode='validation',
-    #                            shuffle=True,
-    #                            normalize=args.normalize_input_image)
-
-    #train_loader = datasets.get_dataloaders(args.dataset,
-    #                            root=args.dataset_path,
-    #                            batch_size=args.batch_size,
-    #                            logger=logger,
-    #                            mode='train',
-    #                            shuffle=True,
-    #                            normalize=args.normalize_input_image)
 
     args.n_data = len(train_loader.dataset)
     args.image_dims = wholeset1.image_dims
@@ -612,7 +567,7 @@ if __name__ == '__main__':
     Train
     """
     model, ckpt_path = train(args, model, train_loader, val_loader, device, logger, optimizers=optimizers, bpp = 8*W*H*3)
-
+    end_of_epoch_metrics(args, model, test_loader, device, logger):
     """
 
     python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
