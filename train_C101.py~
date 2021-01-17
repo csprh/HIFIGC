@@ -567,7 +567,7 @@ if __name__ == '__main__':
     Train
     """
     model, ckpt_path = train(args, model, train_loader, val_loader, device, logger, optimizers=optimizers, bpp = 8*W*H*3)
-    end_of_epoch_metrics(args, model, test_loader, device, logger):
+    end_of_epoch_metrics(args, model, test_loader, device, logger)
     """
 
     python3 -m pudb.run train_C101.py --model_type compression_gan --regime low --n_steps 1e6 --warmstart -ckpt /space/csprh/DASA/HIFIGC/models/hific_low.pt
