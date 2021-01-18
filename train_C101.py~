@@ -544,7 +544,7 @@ if __name__ == '__main__':
                                         download=False, transform=transform)
     wholeset.image_dims = (3, W, H)
 
-    trainset, valset, testset = train_test_val_dataset(wholeset1, test_split=0.1, val_split=0.1, random_state=1)
+    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
 
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
