@@ -367,14 +367,14 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     logger.info('Reached step limit [args.n_steps = {}]'.format(args.n_steps))
                     break
 
-            if (idx % args.save_interval == 1) and (idx > args.save_interval):
+        if (idx % args.save_interval == 1) and (idx > args.save_interval):
                 ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
             # LR scheduling
-            if model.use_classiOnly is True:
+        if model.use_classiOnly is True:
                 utils.update_lr(args, classi_opt, model.step_counter, logger)
-            utils.update_lr(args, amortization_opt, model.step_counter, logger)
-            utils.update_lr(args, hyperlatent_likelihood_opt, model.step_counter, logger)
-            if model.use_discriminator is True:
+        utils.update_lr(args, amortization_opt, model.step_counter, logger)
+        utils.update_lr(args, hyperlatent_likelihood_opt, model.step_counter, logger)
+        if model.use_discriminator is True:
                 utils.update_lr(args, disc_opt, model.step_counter, logger)
         # End epoch
         mean_epoch_loss = np.mean(epoch_loss)
@@ -529,7 +529,7 @@ if __name__ == '__main__':
     logger.info('USING DATASET: {}'.format(args.dataset))
     C101Root = '/space/csprh/DASA/DATABASES/'
     args.C101Root = C101Root
-
+    args.save_interval = 5
     W = 256
     H = 256
 
