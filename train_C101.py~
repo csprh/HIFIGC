@@ -566,7 +566,7 @@ if __name__ == '__main__':
     """
     Train
     """
-    model, ckpt_path = train(args, model, train_loader, val_loader, device, logger, optimizers=optimizers, bpp = 8*W*H*3)
+    #model, ckpt_path = train(args, model, train_loader, val_loader, device, logger, optimizers=optimizers, bpp = 8*W*H*3)
     end_of_epoch_metrics(args, model, test_loader, device, logger)
     """
 

@@ -245,7 +245,7 @@ def test(args, model, epoch, idx, data, y, test_data, ytest, device, epoch_test_
 
 def train_test_val_dataset(dataset, test_split=0.1, val_split=0.1, random_state=1):
     train_init_idx, test_idx = train_test_split(list(range(len(dataset))), test_size=test_split, random_state=random_state)
-    train_idx, val_idx = train_test_split(list(range(len(train_init_idx))), test_size=val_split, random_state=random_state)
+    train_idx, val_idx = train_test_split(train_init_idx, test_size=val_split, random_state=random_state)
     trainset = Subset(dataset, train_idx)
     valset = Subset(dataset, val_idx)
     testset = Subset(dataset, test_idx)
