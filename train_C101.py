@@ -367,8 +367,8 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
                     logger.info('Reached step limit [args.n_steps = {}]'.format(args.n_steps))
                     break
 
-        if (idx % args.save_interval == 1) and (idx > args.save_interval):
-                ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
+        #if (idx % args.save_interval == 1) and (idx > args.save_interval):
+        #        ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
             # LR scheduling
         if model.use_classiOnly is True:
                 utils.update_lr(args, classi_opt, model.step_counter, logger)
@@ -508,7 +508,7 @@ if __name__ == '__main__':
     optimizers['classi'] = classi_opt
 
     for params in model.Encoder.parameters():
-       params.requires_grad = False
+       params.requires_grad = Trues
     for params in model.Generator.parameters():
        params.requires_grad = False
 
