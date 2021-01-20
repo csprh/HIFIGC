@@ -533,6 +533,13 @@ if __name__ == '__main__':
     W = 256
     H = 256
 
+    ThalesRoot = '/space/csprh/DASA/DATABASES/Thales/ROIs2TTV/'
+    args.dataset_path = ThalesRoot
+    args.dataset = 'thales'
+
+    W = 256
+    H = 256
+
 
     val_loader = datasets.get_dataloaders(args.dataset,
                                 root=args.dataset_path,
@@ -554,7 +561,7 @@ if __name__ == '__main__':
                                 root=args.dataset_path,
                                 batch_size=args.batch_size,
                                 logger=logger,
-                                mode='test',
+                                mode='train',
                                 shuffle=True,
                                 normalize=args.normalize_input_image)
 
