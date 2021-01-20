@@ -534,23 +534,29 @@ if __name__ == '__main__':
     H = 256
 
 
-    transform = transforms.Compose([
-    transforms.Resize((W,H)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
+    val_loader = datasets.get_dataloaders(args.dataset,
+                                root=args.dataset_path,
+                                batch_size=args.batch_size,
+                                logger=logger,
+                                mode='validation',
+                                shuffle=True,
+                                normalize=args.normalize_input_image)
 
+    train_loader = datasets.get_dataloaders(args.dataset,
+                                root=args.dataset_path,
+                                batch_size=args.batch_size,
+                                logger=logger,
+                                mode='train',
+                                shuffle=True,
+                                normalize=args.normalize_input_image)
 
-    wholeset = torchvision.datasets.Caltech101(root=C101Root,
-                                        download=False, transform=transform)
-    wholeset.image_dims = (3, W, H)
-
-    trainset, valset, testset = train_test_val_dataset(wholeset, test_split=0.1, val_split=0.1, random_state=1)
-
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
-
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=2)
-
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    test_loader = datasets.get_dataloaders(args.dataset,
+                                root=args.dataset_path,
+                                batch_size=args.batch_size,
+                                logger=logger,
+                                mode='test',
+                                shuffle=True,
+                                normalize=args.normalize_input_image)
 
 
     args.n_data = len(train_loader.dataset)
