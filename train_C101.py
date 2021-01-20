@@ -276,8 +276,8 @@ def train(args, model, train_loader, test_loader, device, logger, optimizers, bp
         epoch_loss, epoch_test_loss = [], []
         epoch_start_time = time.time()
 
-        if epoch > 0:
-            ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
+        #if epoch > 0:
+        #    ckpt_path = utils.save_model(model, optimizers, mean_epoch_loss, epoch, device, args=args, logger=logger)
 
         model.train()
         test_index = 0
