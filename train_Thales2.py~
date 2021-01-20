@@ -567,9 +567,9 @@ if __name__ == '__main__':
 
 
     args.n_data = len(train_loader.dataset)
-    args.image_dims = wholeset.image_dims
+    #args.image_dims = wholeset.image_dims
     logger.info('Training elements: {}'.format(args.n_data))
-    logger.info('Input Dimensions: {}'.format(args.image_dims))
+    #logger.info('Input Dimensions: {}'.format(args.image_dims))
     logger.info('Optimizers: {}'.format(optimizers))
     logger.info('Using device {}'.format(device))
 

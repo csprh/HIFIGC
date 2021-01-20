@@ -508,7 +508,7 @@ if __name__ == '__main__':
     optimizers['classi'] = classi_opt
 
     for params in model.Encoder.parameters():
-       params.requires_grad = True
+       params.requires_grad = False
     for params in model.Generator.parameters():
        params.requires_grad = False
 
